@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { BrainCircuit, User, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { setDoc, doc, getDoc, collection, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
-import Feedback from './Feedback';
+import Footer from './Footer';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -173,7 +173,6 @@ export default function Dashboard() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 7;
 
@@ -201,15 +200,6 @@ export default function Dashboard() {
       console.log('User email set in sessionStorage:', user.email);
     }
   }, [user?.email]);
-
-  // Check if user just completed an interview and should see feedback
-  useEffect(() => {
-    const shouldShowFeedback = sessionStorage.getItem('showFeedbackModal');
-    if (shouldShowFeedback === 'true') {
-      setShowFeedback(true);
-      sessionStorage.removeItem('showFeedbackModal');
-    }
-  }, []);
 
   // Fetch interview history on mount
   React.useEffect(() => {
@@ -811,9 +801,6 @@ export default function Dashboard() {
                         <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-300 text-xs font-medium border border-blue-500/20">
                           {getInterviewType(item)}
                         </span>
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-300 text-xs font-medium border border-violet-500/20">
-                          {item.userInputs?.experience || '0 Year'}
-                        </span>
                       </div>
 
                       {/* View Details Button */}
@@ -1041,7 +1028,7 @@ export default function Dashboard() {
                                 {q.communicationScore && (
                                   <div className="bg-sky-500/5 rounded-xl p-4 border border-sky-500/10">
                                     <div className="flex justify-between items-center mb-2">
-                                      <span className="text-sm font-semibold text-sky-400">Communication Score</span>
+                                      <span className="text-sm font-semibold text-sky-400">Fluency & Grammar</span>
                                       <span className="text-sm font-bold text-white">{q.communicationScore}/10</span>
                                     </div>
                                     {q.fluencyComment && (
@@ -1052,7 +1039,7 @@ export default function Dashboard() {
                                 {q.technicalScore && (
                                   <div className="bg-purple-500/5 rounded-xl p-4 border border-purple-500/10">
                                     <div className="flex justify-between items-center mb-2">
-                                      <span className="text-sm font-semibold text-purple-400">Technical Score</span>
+                                      <span className="text-sm font-semibold text-purple-400">Technical Relevance</span>
                                       <span className="text-sm font-bold text-white">{q.technicalScore}/10</span>
                                     </div>
                                     {q.techComment && (
@@ -1194,11 +1181,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Feedback Modal */}
-      {showFeedback && (
-        <Feedback onClose={() => setShowFeedback(false)} />
-      )}
-
       <style>{`
         /* Custom scrollbar for modal */
         .custom-scrollbar::-webkit-scrollbar {
@@ -1224,6 +1206,8 @@ export default function Dashboard() {
           display: none; /* Chrome, Safari, Opera */
         }
       `}</style>
+      
+      <Footer />
     </div>
   );
 } 

@@ -23,15 +23,19 @@ export default function Interview() {
   const { sanitizeInput, validateInput } = useInputSanitization();
 
   useEffect(() => {
-    // Load form data from sessionStorage if available
-    const saved = sessionStorage.getItem('interviewForm');
-    if (saved) {
-      try {
-        setForm(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse saved form data:', e);
-      }
-    }
+    // Clear form data when component mounts (new interview)
+    sessionStorage.removeItem('interviewForm');
+    
+    // Reset form to default values
+    setForm({
+      name: '',
+      jobRole: '',
+      company: '',
+      experience: '0',
+      interviewType: '',
+      jobDescription: '',
+      resumeText: '',
+    });
   }, []);
 
   useEffect(() => {
