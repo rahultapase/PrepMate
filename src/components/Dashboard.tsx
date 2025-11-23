@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { BrainCircuit, User, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
+import { BrainCircuit, User, LayoutGrid, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { setDoc, doc, getDoc, collection, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const email = user?.email || '';
 
   // Modal close on outside click
@@ -67,6 +68,7 @@ export default function Dashboard() {
             setProfile({ fullName: '', graduation: '', year: '', branch: '', experience: '', role: '' });
             setEditMode(true); // If no profile, go straight to edit mode
           }
+          setDataLoaded(true);
         } catch (err) {
           setError('Failed to load profile.');
         } finally {
@@ -105,6 +107,24 @@ export default function Dashboard() {
   const handleLogout = async () => {
     await logout();
   };
+
+  // Skeleton Loader for Profile
+  const ProfileSkeleton = () => (
+    <div className="animate-pulse space-y-6">
+      <div className="flex items-center gap-4 p-5">
+        <div className="w-20 h-20 rounded-full bg-slate-800"></div>
+        <div className="space-y-3 flex-1">
+          <div className="h-6 bg-slate-800 rounded w-1/3"></div>
+          <div className="h-4 bg-slate-800 rounded w-1/4"></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-24 bg-slate-800 rounded-xl"></div>
+        ))}
+      </div>
+    </div>
+  );
 
   // Delete interview history function
   const deleteInterviewHistory = async (item: any) => {
@@ -378,7 +398,7 @@ export default function Dashboard() {
               <span className="text-white">Prep</span>
               <span className="gradient-text">Mate</span>
             </span>
-            <span className="ml-4 text-lg text-sky-300 font-semibold">Dashboard</span>
+            <span className="ml-4 text-lg text-sky-300 font-semibold">Home</span>
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -403,80 +423,248 @@ export default function Dashboard() {
       </header>
       {/* Profile Modal */}
       {profileOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div ref={modalRef} className="bg-gray-900/90 border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-lg relative">
-            <h2 className="text-2xl font-bold gradient-text mb-6 text-center">
-              {editMode || (!profile.fullName && !profile.graduation && !profile.year && !profile.branch && !profile.experience && !profile.role)
-                ? 'Complete Your Profile'
-                : 'Profile Details'}
-            </h2>
-            {/* Edit button */}
-            {!editMode && !loadingProfile && (
-              <button className="absolute top-4 right-12 text-indigo-300 hover:text-white" onClick={() => setEditMode(true)} aria-label="Edit Profile">
-                <Pencil className="w-6 h-6" />
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-300" onClick={() => setProfileOpen(false)} />
+          
+          <div ref={modalRef} className="relative w-full max-w-2xl transform transition-all duration-300 scale-100">
+            {/* Modal Glow Effect */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 rounded-3xl opacity-30 blur-md"></div>
+            
+            <div className="relative bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+              
+              {/* Close Button */}
+              <button 
+                onClick={() => setProfileOpen(false)}
+                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/20 hover:bg-white/10 text-white/70 hover:text-white transition-all backdrop-blur-sm"
+              >
+                <X className="w-5 h-5" />
               </button>
-            )}
-            {error && (
-              <div className="mb-4 text-center text-red-400 font-semibold">{error}</div>
-            )}
-            {loadingProfile ? (
-              <div className="text-center text-gray-300 py-8">Loading...</div>
-            ) : editMode ? (
-              <form className="flex flex-col gap-4">
-                <input type="text" placeholder="Full Name" className="rounded-lg px-4 py-2 bg-black/40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.fullName} onChange={e => setProfile(p => ({ ...p, fullName: e.target.value }))} />
-                <input type="text" placeholder="Graduation (e.g. B.Tech, B.Sc)" className="rounded-lg px-4 py-2 bg-black/40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.graduation} onChange={e => setProfile(p => ({ ...p, graduation: e.target.value }))} />
-                <input type="text" placeholder="Year of Passing" className="rounded-lg px-4 py-2 bg-black/40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.year} onChange={e => setProfile(p => ({ ...p, year: e.target.value }))} />
-                <input type="email" placeholder="Email" className="rounded-lg px-4 py-2 bg-gray-800 text-gray-400 cursor-not-allowed" value={email} readOnly />
-                <input type="text" placeholder="Branch (e.g. CSE, ECE)" className="rounded-lg px-4 py-2 bg-black/40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.branch} onChange={e => setProfile(p => ({ ...p, branch: e.target.value }))} />
-                <select className="rounded-lg px-4 py-2 bg-black/40 text-white focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.experience} onChange={e => setProfile(p => ({ ...p, experience: e.target.value }))}>
-                  <option value="">Experience Level</option>
-                  <option value="Fresher">Fresher</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={`${i + 1} years`}>{i + 1} years</option>
-                  ))}
-                </select>
-                <input type="text" placeholder="Desired Job Role" className="rounded-lg px-4 py-2 bg-black/40 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-400" value={profile.role} onChange={e => setProfile(p => ({ ...p, role: e.target.value }))} />
-                <div className="flex gap-2 mt-2">
-                  <button type="button" onClick={handleProfileSave} disabled={saving} className="flex-1 px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 via-sky-400 to-purple-500 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-purple-500/40 focus:outline-none text-lg disabled:opacity-60 disabled:cursor-not-allowed">
-                    {saving ? 'Saving...' : 'Save'}
-                  </button>
-                  <button type="button" onClick={() => setEditMode(false)} className="flex-1 px-8 py-3 rounded-xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-all duration-300 focus:outline-none text-lg">Cancel</button>
+
+              {loadingProfile && !dataLoaded ? (
+                <div className="p-8">
+                  <div className="text-center mb-8">
+                     <h2 className="text-2xl font-bold text-white mb-2">Loading Profile</h2>
+                     <p className="text-slate-400">Please wait while we fetch your data...</p>
+                  </div>
+                  <ProfileSkeleton />
                 </div>
-              </form>
-            ) : (
-              <div className="flex flex-col gap-4 text-left text-white">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-black/30 border border-white/10">
-                  <span className="bg-gradient-to-br from-indigo-500 via-sky-400 to-purple-500 p-2 rounded-full"><User className="w-6 h-6 text-white" /></span>
-                  <div>
-                    <div className="text-lg font-bold">{profile.fullName}</div>
-                    <div className="text-xs text-gray-400">{email}</div>
+              ) : (
+                <div className="flex flex-col h-full overflow-y-auto custom-scrollbar">
+                  
+                  {/* Decorative Banner */}
+                  <div className="h-32 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 relative shrink-0">
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-30"></div>
+                  </div>
+
+                  <div className="px-8 pb-8 -mt-12 flex flex-col flex-1">
+                    {/* Header with Avatar */}
+                    <div className="flex justify-between items-end mb-6">
+                      <div className="relative">
+                        <div className="w-24 h-24 rounded-2xl bg-slate-900 p-1.5 shadow-xl">
+                          <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center border border-white/10">
+                            <User className="w-10 h-10 text-slate-300" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-slate-900 rounded-full"></div>
+                      </div>
+                      
+                      {!editMode && (
+                        <button 
+                          onClick={() => setEditMode(true)}
+                          className="mb-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all group"
+                        >
+                          <Pencil className="w-4 h-4 text-violet-400 group-hover:text-violet-300" />
+                          Edit Profile
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-white mb-1">
+                        {profile.fullName || 'User Profile'}
+                      </h2>
+                      <div className="flex items-center gap-2 text-slate-400 text-sm">
+                        <Mail className="w-4 h-4" />
+                        {user?.email || 'No email connected'}
+                      </div>
+                    </div>
+
+                    {error && (
+                      <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                        <span className="text-red-300 font-medium text-sm">{error}</span>
+                      </div>
+                    )}
+
+                    {editMode ? (
+                      <form onSubmit={(e) => { e.preventDefault(); handleProfileSave(); }} className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Full Name</label>
+                            <input 
+                              type="text" 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" 
+                              value={profile.fullName} 
+                              onChange={e => setProfile(p => ({ ...p, fullName: e.target.value }))}
+                              placeholder="John Doe"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Graduation Degree</label>
+                            <input 
+                              type="text" 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" 
+                              value={profile.graduation} 
+                              onChange={e => setProfile(p => ({ ...p, graduation: e.target.value }))}
+                              placeholder="B.Tech, MBA, etc."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Year of Passing</label>
+                            <input 
+                              type="text" 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" 
+                              value={profile.year} 
+                              onChange={e => setProfile(p => ({ ...p, year: e.target.value }))}
+                              placeholder="2024"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Branch / Major</label>
+                            <input 
+                              type="text" 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" 
+                              value={profile.branch} 
+                              onChange={e => setProfile(p => ({ ...p, branch: e.target.value }))}
+                              placeholder="Computer Science"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                           <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Experience</label>
+                            <select 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all appearance-none" 
+                              value={profile.experience} 
+                              onChange={e => setProfile(p => ({ ...p, experience: e.target.value }))}
+                            >
+                              <option value="" className="bg-slate-900">Select Level</option>
+                              <option value="Fresher" className="bg-slate-900">Fresher</option>
+                              {[...Array(10)].map((_, i) => (
+                                <option key={i + 1} value={`${i + 1} years`} className="bg-slate-900">{i + 1} years</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Target Role</label>
+                            <input 
+                              type="text" 
+                              className="w-full rounded-xl px-4 py-3 bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all" 
+                              value={profile.role} 
+                              onChange={e => setProfile(p => ({ ...p, role: e.target.value }))}
+                              placeholder="Software Engineer"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-4 border-t border-slate-800/50 mt-4">
+                          <button 
+                            type="button" 
+                            onClick={() => setEditMode(false)}
+                            className="px-6 py-3 rounded-xl font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all duration-300"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            type="submit"
+                            disabled={saving}
+                            className="flex-1 group relative px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {saving ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Saving...
+                              </span>
+                            ) : (
+                              <span className="flex items-center justify-center gap-2">
+                                <CheckCircle2 className="w-5 h-5" />
+                                Save Changes
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="group p-4 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 border border-white/5 hover:border-violet-500/30 transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-lg bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors">
+                              <GraduationCap className="w-5 h-5 text-violet-400" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Graduation</div>
+                              <div className="text-white font-semibold mt-0.5">{profile.graduation || 'Not set'}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="group p-4 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 border border-white/5 hover:border-blue-500/30 transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                              <Calendar className="w-5 h-5 text-blue-400" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Year</div>
+                              <div className="text-white font-semibold mt-0.5">{profile.year || 'Not set'}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="group p-4 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 border border-white/5 hover:border-cyan-500/30 transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-lg bg-cyan-500/10 group-hover:bg-cyan-500/20 transition-colors">
+                              <BookOpen className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Branch</div>
+                              <div className="text-white font-semibold mt-0.5">{profile.branch || 'Not set'}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="group p-4 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 border border-white/5 hover:border-purple-500/30 transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
+                              <Briefcase className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Experience</div>
+                              <div className="text-white font-semibold mt-0.5">{profile.experience || 'Not set'}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="col-span-1 md:col-span-2 group p-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-violet-900/10 hover:bg-slate-800/50 border border-white/5 hover:border-indigo-500/30 transition-all duration-300">
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-lg bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
+                              <Target className="w-5 h-5 text-indigo-400" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Target Role</div>
+                              <div className="text-white font-semibold mt-0.5">{profile.role || 'Not set'}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-800/60">
-                    <span className="text-indigo-300 font-semibold"><svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422A12.083 12.083 0 0112 21.5a12.083 12.083 0 01-6.16-10.922L12 14z" /></svg></span>
-                    <span className="text-sm"><span className="font-semibold text-gray-300">Graduation:</span> {profile.graduation}</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-800/60">
-                    <span className="text-purple-300 font-semibold"><svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3" /></svg></span>
-                    <span className="text-sm"><span className="font-semibold text-gray-300">Year of Passing:</span> {profile.year}</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-800/60">
-                    <span className="text-sky-300 font-semibold"><svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 2a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2h8z" /></svg></span>
-                    <span className="text-sm"><span className="font-semibold text-gray-300">Branch:</span> {profile.branch}</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-800/60">
-                    <span className="text-violet-300 font-semibold"><svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 17v-2a4 4 0 014-4h0a4 4 0 014 4v2" /><circle cx="12" cy="7" r="4" /></svg></span>
-                    <span className="text-sm"><span className="font-semibold text-gray-300">Experience:</span> {profile.experience}</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-800/60">
-                    <span className="text-indigo-200 font-semibold"><svg className="w-5 h-5 inline" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 01-8 0" /><path d="M12 3v4" /><path d="M12 17v4" /><path d="M4 12h16" /></svg></span>
-                    <span className="text-sm"><span className="font-semibold text-gray-300">Desired Role:</span> {profile.role}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            <button className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl" onClick={() => setProfileOpen(false)} aria-label="Close">&times;</button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -862,6 +1050,23 @@ export default function Dashboard() {
       {showFeedback && (
         <Feedback onClose={() => setShowFeedback(false)} />
       )}
+
+      <style>{`
+        /* Custom scrollbar for modal */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(15, 23, 42, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.3);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 246, 0.5);
+        }
+      `}</style>
     </div>
   );
 } 
