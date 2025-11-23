@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Menu, X, BrainCircuit, Sparkles } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,14 +16,21 @@ export const Header = () => {
   }, []);
 
   const navItems = [
+    { label: 'Home', href: user ? '/home' : '/', isRoute: true },
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'About', href: '#about' }
   ];
 
-  const handleNavClick = (e, href) => {
+  const handleNavClick = (e, href, isRoute = false) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+    
+    // If it's a route, use window.location to navigate
+    if (isRoute) {
+      window.location.href = href;
+      return;
+    }
     
     // Smooth scroll to section
     const element = document.querySelector(href);
@@ -85,7 +94,7 @@ export const Header = () => {
               <a
                 key={index}
                 href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
+                onClick={(e) => handleNavClick(e, item.href, item.isRoute)}
                 className="relative px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors group"
               >
                 <span className="relative z-10">{item.label}</span>
@@ -149,7 +158,7 @@ export const Header = () => {
                 <a
                   key={index}
                   href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
+                  onClick={(e) => handleNavClick(e, item.href, item.isRoute)}
                   className="block px-4 py-3 rounded-xl text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all duration-300"
                 >
                   {item.label}

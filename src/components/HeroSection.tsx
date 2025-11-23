@@ -82,17 +82,35 @@ export const HeroSection= () =>{
             </div>
 
             {/* Enhanced CTA Button */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-6">
               <button 
                 onClick={() => navigate('/signup')}
-                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-2xl shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50 hover:scale-105 overflow-hidden"
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-2xl shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50 hover:scale-105 overflow-hidden w-fit"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
-                <span className="relative z-10">Start Practice</span>
+                <span className="relative z-10">Start Practicing Free</span>
                 <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               
-
+              {/* Trust Badges */}
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <div className="flex items-center gap-2 text-slate-300">
+                  <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span className="font-medium">No Credit Card Required</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-300">
+                  <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                    <svg className="w-3 h-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <span className="font-medium">100% Private & Secure</span>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Header } from './Header';
 
 export default function Signup() {
   const { signup, loginWithGoogle, loading, error } = useAuth();
@@ -9,6 +10,8 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +42,10 @@ export default function Signup() {
   // SUCCESS STATE - This will show after successful signup
   if (signupSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden">
-        <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
+      <>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden pt-20">
+          <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 left-10 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-float-slow"></div>
         
         <div className="bg-gray-800/50 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-violet-500/20 relative z-10">
@@ -62,14 +67,17 @@ export default function Signup() {
             Go to Login
           </Link>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
+    <>
+      <Header />
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden pt-20">
+        {/* Background Elements */}
+        <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
       <div className="absolute bottom-20 left-10 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-float-slow"></div>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse"></div>
       
@@ -98,26 +106,42 @@ export default function Signup() {
           </div>
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Create a strong password (8+ characters)"
-              className="w-full px-4 py-3 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
+              className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
               value={password}
               onChange={e => setPassword(e.target.value)}
               disabled={loading}
               required
               minLength={8}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
           <div className="relative">
             <input
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm your password"
-              className="w-full px-4 py-3 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
+              className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               disabled={loading}
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
 
           {password && confirmPassword && password !== confirmPassword && (
@@ -177,5 +201,6 @@ export default function Signup() {
         </div>
       </div>
     </div>
+    </>
   );
 }

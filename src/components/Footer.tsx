@@ -35,8 +35,6 @@ export const Footer = () => {
     { icon: Twitter, href: '#', label: 'Twitter' },
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
     { icon: Github, href: '#', label: 'GitHub' },
-    { icon: Youtube, href: '#', label: 'YouTube' },
-    { icon: Instagram, href: '#', label: 'Instagram' }
   ];
 
   return (
@@ -56,7 +54,7 @@ export const Footer = () => {
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-6 max-w-sm">
-              The next generation of interview preparation, combining Artifical Intelligence with industry expertise to help you land your dream job.
+              Al-powered mock interviews that help you land your dream job. Practice with confidence, get instant feedback, and ace your next interview.
             </p>
             
             {/* Social Links */}
@@ -151,6 +149,10 @@ export const Footer = () => {
               <span className="hidden md:inline">•</span>
               <span className="hidden md:inline">All rights reserved</span>
             </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span>Made for Job Seekers</span>
+            </div>
             
             <div className="flex items-center gap-6">
               <div className="flex items-center space-x-2">
@@ -160,7 +162,9 @@ export const Footer = () => {
             </div>
           </div>
         </div>
+        
       </div>
     </footer>
   );
 };
+

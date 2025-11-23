@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Lock, ArrowRight, Star, Mail, X } from 'lucide-react';
+import { Lock, ArrowRight, Star, Mail, X, Eye, EyeOff } from 'lucide-react';
+import { Header } from './Header';
 
 export default function Login() {
   const { login, loginWithGoogle, loading, error, resendVerificationEmail, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [showResend, setShowResend] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -69,9 +71,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
+    <>
+      <Header />
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 relative overflow-hidden pt-20">
+        {/* Animated background elements */}
+        <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float"></div>
       <div className="absolute bottom-20 left-10 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-float-slow"></div>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse"></div>
       
@@ -104,14 +108,22 @@ export default function Login() {
           </div>
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Your password"
-              className="w-full px-4 py-3 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
+              className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-700/50 text-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent border border-gray-600 placeholder-gray-400"
               value={password}
               onChange={e => setPassword(e.target.value)}
               disabled={loading}
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
           
           {/* Forgot Password Link */}
@@ -260,6 +272,7 @@ export default function Login() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 } 

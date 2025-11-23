@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { CheckCircle, Sparkles, ArrowRight, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const HowItWorksSection= () =>{
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   
   const steps = [{
@@ -143,7 +145,7 @@ export const HowItWorksSection= () =>{
                 Join thousands of professionals improving their skills daily
               </p>
             </div>
-            <button className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+            <button onClick={() => navigate('/signup')} className="group relative px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2">
               <Play className="h-5 w-5" />
               Start Training Now
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
