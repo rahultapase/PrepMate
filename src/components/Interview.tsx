@@ -12,7 +12,7 @@ export default function Interview() {
     name: '',
     jobRole: '',
     company: '',
-    experience: '',
+    experience: '0',
     interviewType: '',
     jobDescription: '',
     resumeText: '',
