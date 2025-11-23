@@ -681,178 +681,285 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 relative z-10 w-full">
-        <div className="w-full max-w-2xl mx-auto glass-effect rounded-3xl p-10 flex flex-col items-center text-center shadow-2xl mb-12">
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-2 gradient-text drop-shadow-lg">Welcome, {firstName}!</h1>
-          <p className="text-lg text-sky-100 mb-6 font-medium">Here you can view your progress, stats, and manage your interview sessions.</p>
-          {/* Interview History Table */}
-          <div className="w-full mt-8">
-            <h2 className="text-xl font-bold text-white mb-4 text-left">Interview History</h2>
+      <main className="flex-1 flex flex-col px-6 py-8 pt-32 relative z-10 w-full max-w-7xl mx-auto">
+        {/* Header Section with Stats Card on Right */}
+        <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Welcome Section */}
+          <div className="lg:col-span-2">
+            {/* Dashboard Label */}
+            <div className="flex items-center gap-2 mb-4">
+              <BrainCircuit className="w-5 h-5 text-violet-400" />
+              <span className="text-violet-400 font-semibold text-sm uppercase tracking-wider">Dashboard</span>
+            </div>
+            
+            {/* Welcome Message */}
+            <h1 className="text-4xl md:text-5xl font-bold mb-3">
+              <span className="text-white">Welcome back, </span>
+              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                {firstName}!
+              </span>
+            </h1>
+            <p className="text-slate-400 text-lg mb-6">
+              Track your interview progress and continue your journey to ace your next interview.
+            </p>
+            
+            {/* New Interview Button */}
+            <button
+              onClick={() => navigate('/interview')}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-105"
+            >
+              <span className="text-2xl leading-none">+</span>
+              <span>Start New Interview</span>
+            </button>
+          </div>
+
+          {/* Right: Completed Interviews Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-violet-500/30 h-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-slate-400 font-medium text-sm">Completed Interviews</h3>
+                <div className="p-3 rounded-xl bg-violet-500/10">
+                  <CheckCircle2 className="w-6 h-6 text-violet-400" />
+                </div>
+              </div>
+              <div className="text-4xl font-bold text-white mb-1">
+                {interviewHistory.length}
+              </div>
+              <p className="text-slate-500 text-sm">Total sessions</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Interview Spaces Section */}
+        <div className="mb-6 mt-14">
+          <h2 className="text-2xl font-bold mb-2">
+            <span className="text-white">Your Interview </span>
+            <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">History</span>
+          </h2>
             {loadingHistory ? (
-              <div className="text-center text-gray-400 py-8">Loading history...</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700/50 animate-pulse">
+                    <div className="h-6 bg-slate-800 rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-slate-800 rounded w-1/2 mb-3"></div>
+                    <div className="h-4 bg-slate-800 rounded w-full"></div>
+                  </div>
+                ))}
+              </div>
             ) : interviewHistory.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                <div className="text-lg mb-2">No interview history found.</div>
-                <div className="text-sm">Complete your first mock interview to see feedback here!</div>
+              <div className="bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-12 text-center shadow-xl">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-violet-500/10 mb-6">
+                  <svg className="w-10 h-10 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">No Interview History</h3>
+                <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                  Complete your first mock interview to see feedback and track your progress here!
+                </p>
+                <button
+                  onClick={() => navigate('/interview')}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-105"
+                >
+                  <span className="text-xl leading-none">+</span>
+                  <span>Start Your First Interview</span>
+                </button>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-xl bg-black/40 border border-white/10">
-                <table className="min-w-full text-sm text-left">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-indigo-700 via-sky-700 to-purple-700 text-white">
-                      <th className="px-4 py-3 font-semibold">#</th>
-                      <th className="px-4 py-3 font-semibold">Type</th>
-                      <th className="px-4 py-3 font-semibold">Date</th>
-                      <th className="px-4 py-3 font-semibold">Action</th>
-                      <th className="px-4 py-3 font-semibold">Delete</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-white">
-                    {interviewHistory
-                      .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
-                      .map((item, idx) => (
-                      <tr key={item.id} className="border-b border-white/10 hover:bg-gray-800/40 transition">
-                        <td className="px-4 py-3 text-gray-200">{currentPage * itemsPerPage + idx + 1}</td>
-                        <td className="px-4 py-3 text-sky-300 font-medium">{getInterviewType(item)}</td>
-                        <td className="px-4 py-3 text-gray-300">{item.timestamp ? new Date(item.timestamp).toLocaleString() : 'N/A'}</td>
-                        <td className="px-4 py-3">
-                          <button
-                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 via-sky-400 to-purple-500 text-white font-semibold shadow hover:scale-105 transition"
-                            onClick={() => { 
-                              setSelectedFeedback({ 
-                                ...item.feedback, 
-                                userInputs: item.userInputs,
-                                rawQuestions: item.questions,
-                                rawAnswers: item.answers
-                              }); 
-                              setFeedbackModalOpen(true); 
-                            }}
-                          >
-                            View Feedback
-                          </button>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            className="p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all duration-300 hover:scale-110 shadow-lg"
-                            onClick={() => handleDeleteClick(item)}
-                            title="Delete this interview history"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {/* Pagination Controls */}
-                {interviewHistory.length > itemsPerPage && (
-                  <div className="flex items-center justify-between px-4 py-3 bg-gray-800/40 border-t border-white/10">
-                    <div className="text-sm text-gray-300">
-                      Showing {currentPage * itemsPerPage + 1} to {Math.min((currentPage + 1) * itemsPerPage, interviewHistory.length)} of {interviewHistory.length} interviews
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {interviewHistory
+                  .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
+                  .map((item) => (
+                  <div key={item.id} className="group bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden hover:border-violet-500/30">
+                    {/* Card Header */}
+                    <div className="relative bg-gradient-to-r from-violet-600/20 via-purple-600/20 to-indigo-600/20 border-b border-violet-500/20 p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-white mb-1.5">
+                            {item.userInputs?.jobRole || getInterviewType(item)}
+                          </h3>
+                          <div className="flex items-center gap-2 text-slate-400 text-sm">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span className="font-medium">{item.userInputs?.company || 'Company'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-500 text-xs mt-1">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>{item.timestamp ? new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteClick(item)}
+                          className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all duration-300 backdrop-blur-sm"
+                          title="Delete this interview history"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    {/* Card Body */}
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 mb-4 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          Completed
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-300 text-xs font-medium border border-blue-500/20">
+                          {getInterviewType(item)}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-300 text-xs font-medium border border-violet-500/20">
+                          {item.userInputs?.experience || '0 Year'}
+                        </span>
+                      </div>
+
+                      {/* View Details Button */}
                       <button
-                        onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                        disabled={currentPage === 0}
-                        className="px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed"
+                        onClick={() => { 
+                          setSelectedFeedback({ 
+                            ...item.feedback, 
+                            userInputs: item.userInputs,
+                            rawQuestions: item.questions,
+                            rawAnswers: item.answers
+                          }); 
+                          setFeedbackModalOpen(true); 
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-violet-500/50 text-white font-medium text-sm transition-all duration-300 group-hover:shadow-lg"
                       >
-                        ← Previous
-                      </button>
-                      <span className="text-sm text-gray-300 px-2">
-                        {currentPage + 1} of {Math.ceil(interviewHistory.length / itemsPerPage)}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(interviewHistory.length / itemsPerPage) - 1, prev + 1))}
-                        disabled={currentPage >= Math.ceil(interviewHistory.length / itemsPerPage) - 1}
-                        className="px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed"
-                      >
-                        Next →
+                        <span>View Details</span>
+                        <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
                       </button>
                     </div>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loadingHistory && interviewHistory.length > itemsPerPage && (
+              <div className="flex items-center justify-between mt-8 px-6 py-4 bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl">
+                <div className="text-sm text-slate-400">
+                  Showing <span className="text-white font-semibold">{currentPage * itemsPerPage + 1}</span> to <span className="text-white font-semibold">{Math.min((currentPage + 1) * itemsPerPage, interviewHistory.length)}</span> of <span className="text-white font-semibold">{interviewHistory.length}</span> interviews
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                    disabled={currentPage === 0}
+                    className="px-4 py-2 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 disabled:bg-slate-900/50 disabled:text-slate-600 border border-slate-700 disabled:border-slate-800 text-white text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed hover:border-violet-500/50"
+                  >
+                    ← Previous
+                  </button>
+                  <span className="text-sm text-slate-300 px-3">
+                    <span className="text-white font-semibold">{currentPage + 1}</span> of {Math.ceil(interviewHistory.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(Math.ceil(interviewHistory.length / itemsPerPage) - 1, prev + 1))}
+                    disabled={currentPage >= Math.ceil(interviewHistory.length / itemsPerPage) - 1}
+                    className="px-4 py-2 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 disabled:bg-slate-900/50 disabled:text-slate-600 border border-slate-700 disabled:border-slate-800 text-white text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed hover:border-violet-500/50"
+                  >
+                    Next →
+                  </button>
+                </div>
               </div>
             )}
           </div>
-          {/* Start Interview Button */}
-          <button
-            className="mt-10 px-10 py-4 rounded-2xl font-bold text-white text-xl bg-gradient-to-r from-indigo-500 via-sky-400 to-purple-500 shadow-xl transition-all duration-300 focus:outline-none ring-2 ring-purple-400/40 ring-offset-2 hover:scale-105 hover:shadow-purple-500/60 animate-pulse-glow"
-            onClick={() => navigate('/interview')}
-          >
-            Start Interview
-          </button>
-        </div>
       </main>
       {/* Feedback Modal */}
       {feedbackModalOpen && selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-900/90 border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
-            <h2 className="text-2xl font-bold gradient-text mb-6 text-center">Interview Feedback</h2>
-            <div className="text-left text-white space-y-6">
-              {/* User Information */}
-              {selectedFeedback.userInputs && (
-                <div className="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 rounded-xl p-6 border border-indigo-500/30">
-                  <div className="font-semibold text-lg mb-4 text-indigo-300 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Interview Details
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {selectedFeedback.userInputs.name && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-medium">Name:</span>
-                        <span className="text-white">{selectedFeedback.userInputs.name}</span>
-                      </div>
-                    )}
-                    {selectedFeedback.userInputs.jobRole && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-medium">Role:</span>
-                        <span className="text-white">{selectedFeedback.userInputs.jobRole}</span>
-                      </div>
-                    )}
-                    {selectedFeedback.userInputs.company && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-medium">Company:</span>
-                        <span className="text-white">{selectedFeedback.userInputs.company}</span>
-                      </div>
-                    )}
-                    {selectedFeedback.userInputs.experience && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-medium">Experience:</span>
-                        <span className="text-white">{selectedFeedback.userInputs.experience}</span>
-                      </div>
-                    )}
-                    {selectedFeedback.userInputs.interviewType && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-medium">Interview Type:</span>
-                        <span className="text-sky-300 font-semibold">{selectedFeedback.userInputs.interviewType}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto feedback-scrollbar">
+            {/* Glow Effect */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 rounded-3xl opacity-20 blur-xl"></div>
+            
+            <div className="relative bg-[#0b0c15] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8">
+              {/* Close Button */}
+              <button 
+                className="absolute top-6 right-6 p-2 rounded-full bg-slate-800/50 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all duration-300 z-10" 
+                onClick={() => setFeedbackModalOpen(false)} 
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-              {/* Overall Scores */}
-              {(selectedFeedback.overallScore || selectedFeedback.communicationScore || selectedFeedback.technicalScore || selectedFeedback.logicalScore || selectedFeedback.behavioralScore) && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  {selectedFeedback.overallScore && (
-                    <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-xl p-4 border border-indigo-500/30">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-indigo-300">{selectedFeedback.overallScore}/100</div>
-                        <div className="text-sm text-gray-300">Overall Score</div>
-                      </div>
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-violet-500/10 border border-indigo-500/20">
+                    <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+                    Interview Feedback
+                  </h2>
+                </div>
+                <p className="text-slate-400 text-sm">Detailed analysis of your performance</p>
+              </div>
+              <div className="text-left text-white space-y-6">
+                {/* User Information */}
+                {selectedFeedback.userInputs && (
+                  <div className="bg-white/[0.02] rounded-2xl p-6 border border-white/5">
+                    <div className="font-semibold text-md text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Candidate Profile
                     </div>
-                  )}
-                  {selectedFeedback.communicationScore && (
-                    <div className="bg-gradient-to-br from-sky-600/20 to-blue-600/20 rounded-xl p-4 border border-sky-500/30">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-sky-300">{selectedFeedback.communicationScore}/100</div>
-                        <div className="text-sm text-gray-300">Communication</div>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      {selectedFeedback.userInputs.name && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-1">Name</div>
+                          <div className="text-white font-medium">{selectedFeedback.userInputs.name}</div>
+                        </div>
+                      )}
+                      {selectedFeedback.userInputs.jobRole && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-1">Target Role</div>
+                          <div className="text-white font-medium">{selectedFeedback.userInputs.jobRole}</div>
+                        </div>
+                      )}
+                      {selectedFeedback.userInputs.company && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-1">Company</div>
+                          <div className="text-white font-medium">{selectedFeedback.userInputs.company}</div>
+                        </div>
+                      )}
+                      {selectedFeedback.userInputs.experience && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-1">Experience</div>
+                          <div className="text-white font-medium">{selectedFeedback.userInputs.experience}</div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {/* Overall Scores */}
+                {(selectedFeedback.overallScore || selectedFeedback.communicationScore || selectedFeedback.technicalScore || selectedFeedback.logicalScore || selectedFeedback.behavioralScore) && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {selectedFeedback.overallScore && (
+                      <div className="bg-gradient-to-br from-indigo-500/10 to-violet-500/10 rounded-2xl p-6 border border-indigo-500/20 text-center relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-indigo-500/5 blur-xl group-hover:bg-indigo-500/10 transition-all"></div>
+                        <div className="relative">
+                          <div className="text-4xl font-bold text-indigo-400 mb-1">{selectedFeedback.overallScore}/100</div>
+                          <div className="text-xs text-indigo-200/60 uppercase tracking-widest font-semibold">Overall Score</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedFeedback.communicationScore && (
+                      <div className="bg-gradient-to-br from-sky-500/10 to-blue-500/10 rounded-2xl p-6 border border-sky-500/20 text-center relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-sky-500/5 blur-xl group-hover:bg-sky-500/10 transition-all"></div>
+                        <div className="relative">
+                          <div className="text-4xl font-bold text-sky-400 mb-1">{selectedFeedback.communicationScore}/100</div>
+                          <div className="text-xs text-sky-200/60 uppercase tracking-widest font-semibold">Communication</div>
+                        </div>
+                      </div>
+                    )}
                   {/* Show appropriate score based on interview type */}
                   {(() => {
                     const interviewType = selectedFeedback.userInputs?.interviewType || selectedFeedback.interviewType || '';
@@ -863,132 +970,160 @@ export default function Dashboard() {
                     if (isHRorManagerial) {
                       // For HR/Behavioral/Managerial interviews, show logical & behavioral score
                       return selectedFeedback.logicalBehavioralScore && (
-                        <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/20 rounded-xl p-4 border border-emerald-500/30">
-                          <div className="text-center">
-                            <div className="text-3xl font-bold text-emerald-300">{selectedFeedback.logicalBehavioralScore}/100</div>
-                            <div className="text-sm text-gray-300">Logical & Behavioral</div>
+                        <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl p-6 border border-emerald-500/20 text-center relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-all"></div>
+                          <div className="relative">
+                            <div className="text-4xl font-bold text-emerald-400 mb-1">{selectedFeedback.logicalBehavioralScore}/100</div>
+                            <div className="text-xs text-emerald-200/60 uppercase tracking-widest font-semibold">Behavioral</div>
                           </div>
                         </div>
                       );
                     } else {
                       // For technical interviews, show technical score
                       return selectedFeedback.technicalScore && (
-                        <div className="bg-gradient-to-br from-purple-600/20 to-violet-600/20 rounded-xl p-4 border border-purple-500/30">
-                          <div className="text-center">
-                            <div className="text-3xl font-bold text-purple-300">{selectedFeedback.technicalScore}/100</div>
-                            <div className="text-sm text-gray-300">Technical</div>
+                        <div className="bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 rounded-2xl p-6 border border-purple-500/20 text-center relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-purple-500/5 blur-xl group-hover:bg-purple-500/10 transition-all"></div>
+                          <div className="relative">
+                            <div className="text-4xl font-bold text-purple-400 mb-1">{selectedFeedback.technicalScore}/100</div>
+                            <div className="text-xs text-purple-200/60 uppercase tracking-widest font-semibold">Technical</div>
                           </div>
                         </div>
                       );
                     }
                   })()}
-                </div>
-              )}
-
-              {/* Interview Summary */}
-              {selectedFeedback.interviewSummary && (
-                <div>
-                  <div className="font-semibold text-lg mb-3 text-sky-300 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Interview Summary
                   </div>
-                  <div className="bg-black/30 rounded-lg p-4 text-gray-200 leading-relaxed">{selectedFeedback.interviewSummary}</div>
-                </div>
-              )}
+                )}
 
-              {/* Individual Question Evaluations */}
-              {selectedFeedback.questions && Array.isArray(selectedFeedback.questions) && (
-                <div>
-                  <div className="font-semibold text-lg mb-3 text-indigo-300 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Detailed Question Analysis
+                {/* Interview Summary */}
+                {selectedFeedback.interviewSummary && (
+                  <div className="bg-slate-900/50 rounded-2xl p-6 border border-white/5">
+                    <div className="font-semibold text-lg mb-4 text-white flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </span>
+                      Interview Summary
+                    </div>
+                    <div className="text-slate-300 leading-relaxed text-sm md:text-base">
+                      {selectedFeedback.interviewSummary}
+                    </div>
                   </div>
-                  <div className="space-y-4">
-                    {selectedFeedback.questions.map((q: any, i: number) => (
-                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 border border-gray-700/50">
-                        <div className="mb-3">
-                          <div className="font-semibold text-purple-200 mb-2">Q{i + 1}: {q.question}</div>
-                          <div className="text-gray-300 text-sm bg-gray-900/50 rounded p-2">
-                            <span className="font-semibold text-gray-400">Your Answer:</span> {q.answer}
+                )}
+
+                {/* Individual Question Evaluations */}
+                {selectedFeedback.questions && Array.isArray(selectedFeedback.questions) && (
+                  <div className="space-y-6">
+                    <div className="font-semibold text-lg text-white flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      Detailed Question Analysis
+                    </div>
+                    <div className="grid gap-4">
+                      {selectedFeedback.questions.map((q: any, i: number) => (
+                        <div key={i} className="group bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl p-6 border border-white/5 hover:border-violet-500/30 transition-all duration-300">
+                          <div className="flex gap-4">
+                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-sm font-bold border border-white/5">
+                              {i + 1}
+                            </span>
+                            <div className="flex-1 space-y-4">
+                              <div>
+                                <h4 className="font-medium text-white text-lg leading-snug mb-3">{q.question}</h4>
+                                <div className="bg-[#1a1f3a] rounded-lg p-4 border border-[#2a3150]">
+                                  <p className="text-slate-300 text-sm"><span className="text-slate-400 font-medium">Your Answer:</span> {q.answer}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                {q.communicationScore && (
+                                  <div className="bg-sky-500/5 rounded-xl p-4 border border-sky-500/10">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-sm font-semibold text-sky-400">Communication Score</span>
+                                      <span className="text-sm font-bold text-white">{q.communicationScore}/10</span>
+                                    </div>
+                                    {q.fluencyComment && (
+                                      <p className="text-sm text-slate-400 leading-relaxed">{q.fluencyComment}</p>
+                                    )}
+                                  </div>
+                                )}
+                                {q.technicalScore && (
+                                  <div className="bg-purple-500/5 rounded-xl p-4 border border-purple-500/10">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-sm font-semibold text-purple-400">Technical Score</span>
+                                      <span className="text-sm font-bold text-white">{q.technicalScore}/10</span>
+                                    </div>
+                                    {q.techComment && (
+                                      <p className="text-sm text-slate-400 leading-relaxed">{q.techComment}</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {q.communicationScore && (
-                            <div className="bg-sky-900/30 rounded p-3 border border-sky-700/30">
-                              <div className="text-sm text-sky-300 font-semibold mb-1">Communication Score: {q.communicationScore}/10</div>
-                              {q.fluencyComment && (
-                                <div className="text-xs text-gray-300">{q.fluencyComment}</div>
-                              )}
-                            </div>
-                          )}
-                          {q.technicalScore && (
-                            <div className="bg-purple-900/30 rounded p-3 border border-purple-700/30">
-                              <div className="text-sm text-purple-300 font-semibold mb-1">Technical Score: {q.technicalScore}/10</div>
-                              {q.techComment && (
-                                <div className="text-xs text-gray-300">{q.techComment}</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Fallback: Raw Questions and Answers */}
-              {(!selectedFeedback.questions || !Array.isArray(selectedFeedback.questions)) && 
-               selectedFeedback.rawQuestions && selectedFeedback.rawAnswers && (
-                <div>
-                  <div className="font-semibold text-lg mb-3 text-indigo-300 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Interview Questions & Answers
-                  </div>
-                  <div className="space-y-4">
-                    {selectedFeedback.rawQuestions.map((question: string, i: number) => (
-                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 border border-gray-700/50">
-                        <div className="mb-3">
-                          <div className="font-semibold text-purple-200 mb-2">Q{i + 1}: {question}</div>
-                          <div className="text-gray-300 text-sm bg-gray-900/50 rounded p-2">
-                            <span className="font-semibold text-gray-400">Your Answer:</span> {selectedFeedback.rawAnswers[i] || 'No answer provided'}
+                {/* Fallback: Raw Questions and Answers */}
+                {(!selectedFeedback.questions || !Array.isArray(selectedFeedback.questions)) && 
+                 selectedFeedback.rawQuestions && selectedFeedback.rawAnswers && (
+                  <div className="space-y-6">
+                    <div className="font-semibold text-lg text-white flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      Transcript
+                    </div>
+                    <div className="space-y-4">
+                      {selectedFeedback.rawQuestions.map((question: string, i: number) => (
+                        <div key={i} className="group bg-white/[0.02] rounded-2xl p-6 border border-white/5">
+                          <div className="flex gap-4">
+                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-sm font-bold border border-white/5">
+                              {i + 1}
+                            </span>
+                            <div>
+                              <h4 className="font-medium text-white text-lg leading-snug mb-2">{question}</h4>
+                              <p className="text-slate-400 text-sm">{selectedFeedback.rawAnswers[i] || 'No answer recorded'}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Overall Suggestions */}
-              {selectedFeedback.overallSuggestions && Array.isArray(selectedFeedback.overallSuggestions) && selectedFeedback.overallSuggestions.length > 0 && (
-                <div>
-                  <div className="font-semibold text-lg mb-3 text-green-300 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Improvement Suggestions
-                  </div>
-                  <div className="bg-green-900/20 rounded-lg p-4 border border-green-700/30">
-                    <ul className="space-y-2">
+                {/* Overall Suggestions */}
+                {selectedFeedback.overallSuggestions && Array.isArray(selectedFeedback.overallSuggestions) && selectedFeedback.overallSuggestions.length > 0 && (
+                  <div className="rounded-2xl bg-gradient-to-r from-emerald-900/10 to-teal-900/10 border border-emerald-500/20 p-6">
+                    <div className="font-semibold text-lg mb-4 text-emerald-400 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Key Improvements
+                    </div>
+                    <ul className="grid gap-3">
                       {selectedFeedback.overallSuggestions.map((suggestion: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-gray-200">
-                          <span className="text-green-400 mt-1">•</span>
-                          <span>{suggestion}</span>
+                        <li key={i} className="flex items-start gap-3 text-slate-300 bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10">
+                          <span className="text-emerald-400 mt-1 flex-shrink-0">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </span>
+                          <span className="text-sm">{suggestion}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-            <button className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl" onClick={() => setFeedbackModalOpen(false)} aria-label="Close">&times;</button>
           </div>
         </div>
       )}
@@ -1078,6 +1213,15 @@ export default function Dashboard() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(139, 92, 246, 0.5);
+        }
+
+        /* Feedback modal scrollbar - hidden but functional */
+        .feedback-scrollbar {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .feedback-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
         }
       `}</style>
     </div>
