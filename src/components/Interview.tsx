@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BrainCircuit, UploadCloud, FileText, User, Briefcase, Building2, Layers, ClipboardList } from 'lucide-react';
+import { BrainCircuit, UploadCloud, FileText, User, Briefcase, Building2, Layers, ClipboardList, Plus, Minus, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { sanitizeText, validateAndSanitize, useInputSanitization } from '../utils/sanitization';
+import { useInputSanitization } from '../utils/sanitization';
+import { useAuth } from '../hooks/useAuth';
 
-const experienceOptions = [
-  'Fresher',
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'None'
-];
-const interviewTypes = ['Technical', 'HR', 'Managerial', 'None'];
+const interviewTypes = ['Technical', 'HR', 'Managerial'];
 
 export default function Interview() {
+  const { logout } = useAuth();
   const [form, setForm] = useState({
     name: '',
     jobRole: '',
@@ -19,8 +17,8 @@ export default function Interview() {
     jobDescription: '',
     resumeText: '',
   });
-  const [resumeName, setResumeName] = useState('');
   const [error, setError] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const { sanitizeInput, validateInput } = useInputSanitization();
 
@@ -30,7 +28,9 @@ export default function Interview() {
     if (saved) {
       try {
         setForm(JSON.parse(saved));
-      } catch {}
+      } catch (e) {
+        console.error('Failed to parse saved form data:', e);
+      }
     }
   }, []);
 
@@ -59,28 +59,59 @@ export default function Interview() {
       case 'name':
       case 'jobRole':
       case 'company':
-        // Sanitize text inputs
-        sanitizedValue = sanitizeInput(value, 'text');
+        // For text inputs, only remove HTML tags and dangerous characters but preserve spaces
+        sanitizedValue = value
+          .replace(/<[^>]*>/g, '') // Remove HTML tags
+          .replace(/[<>"'`=/]/g, '') // Remove dangerous characters but NOT ampersands or spaces
+          .replace(/javascript:/gi, '') // Remove javascript: protocol
+          .replace(/on\w+\s*=/gi, ''); // Remove event handlers
         break;
       case 'jobDescription':
-      case 'resumeText':
-        // Sanitize textarea inputs (remove HTML tags)
-        sanitizedValue = sanitizeText(value);
+      case 'resumeText': {
+        // For textareas, only remove HTML tags and dangerous characters but preserve spaces
+        sanitizedValue = value
+          .replace(/<[^>]*>/g, '') // Remove HTML tags
+          .replace(/[<>"'`=]/g, '') // Remove dangerous characters
+          .replace(/javascript:/gi, '') // Remove javascript: protocol
+          .replace(/on\w+\s*=/gi, ''); // Remove event handlers
         break;
+      }
       case 'experience':
-      case 'interviewType':
-        // For select fields, validate against allowed options
-        const allowedOptions = name === 'experience' ? experienceOptions : interviewTypes;
-        if (!allowedOptions.includes(value)) {
+        // Only allow numbers and empty string
+        if (value === '' || /^\d+$/.test(value)) {
+          const numValue = parseInt(value) || 0;
+          sanitizedValue = numValue > 50 ? '50' : value;
+        } else {
+          sanitizedValue = form.experience;
+        }
+        break;
+      case 'interviewType': {
+        // For select field, validate against allowed options
+        if (!interviewTypes.includes(value) && value !== '') {
           sanitizedValue = '';
         }
         break;
+      }
       default:
         // Default sanitization for unknown fields
         sanitizedValue = sanitizeInput(value, 'text');
     }
     
     setForm(f => ({ ...f, [name]: sanitizedValue }));
+  };
+
+  const incrementExperience = () => {
+    const current = parseInt(form.experience) || 0;
+    if (current < 50) {
+      setForm(f => ({ ...f, experience: String(current + 1) }));
+    }
+  };
+
+  const decrementExperience = () => {
+    const current = parseInt(form.experience) || 0;
+    if (current > 0) {
+      setForm(f => ({ ...f, experience: String(current - 1) }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -97,7 +128,7 @@ export default function Interview() {
     
     // Check for validation errors
     const errors = Object.entries(validationResults)
-      .filter(([_, result]) => !result.isValid)
+      .filter(([, result]) => !result.isValid)
       .map(([field, result]) => `${field}: ${result.error}`)
       .join(', ');
     
@@ -117,165 +148,332 @@ export default function Interview() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 relative overflow-x-hidden">
-      {/* Futuristic mesh grid background */}
-      <div className="mesh-grid absolute inset-0 opacity-20 pointer-events-none z-0"></div>
-      <div className="absolute top-20 right-10 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl animate-float z-0"></div>
-      <div className="absolute bottom-20 left-10 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl animate-float-slow z-0"></div>
-      <header className="relative z-10 w-full py-6">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3">
-          <BrainCircuit className="h-8 w-8 text-violet-500 animate-pulse-glow" />
-          <span className="text-2xl font-bold">
-            <span className="text-white">Prep</span>
-            <span className="gradient-text">Mate</span>
-          </span>
-          <span className="ml-4 text-lg text-sky-300 font-semibold">Interview</span>
-        </div>
-      </header>
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 relative z-10 w-full">
-        <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto glass-effect rounded-3xl p-10 flex flex-col items-center text-center shadow-2xl animate-fade-in">
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-6 gradient-text drop-shadow-lg">Prepare for Your Interview</h1>
-          
-          {/* Error Display */}
-          {error && (
-            <div className="w-full mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
-              {error}
-            </div>
-          )}
-          
-          <div className="w-full flex flex-col gap-5">
-            {/* Name */}
-            <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <User className="w-5 h-5 text-indigo-400" />
-              <input
-                type="text"
-                name="name"
-                className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-lg"
-                placeholder="Name"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Job Role */}
-            <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <Briefcase className="w-5 h-5 text-sky-400" />
-              <input
-                type="text"
-                name="jobRole"
-                className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-lg"
-                placeholder="Any job role"
-                value={form.jobRole}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            {/* Company (optional) */}
-            <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <Building2 className="w-5 h-5 text-purple-400" />
-              <input
-                type="text"
-                name="company"
-                className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-lg"
-                placeholder="Company (optional)"
-                value={form.company}
-                onChange={handleChange}
-              />
-            </div>
-            {/* Experience Level */}
-            <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <Layers className="w-5 h-5 text-violet-400" />
-              <select
-                name="experience"
-                className="flex-1 bg-gray-900/80 outline-none text-white placeholder-gray-400 text-lg rounded-lg border-none focus:ring-2 focus:ring-sky-400"
-                value={form.experience}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Experience Level</option>
-                {experienceOptions.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-            </div>
-            {/* Type of Interview */}
-            <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <ClipboardList className="w-5 h-5 text-sky-300" />
-              <select
-                name="interviewType"
-                className="flex-1 bg-gray-900/80 outline-none text-white placeholder-gray-400 text-lg rounded-lg border-none focus:ring-2 focus:ring-sky-400"
-                value={form.interviewType}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Type of Interview</option>
-                {interviewTypes.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-            </div>
-            {/* Job Description (optional) */}
-            <div className="flex items-start gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <FileText className="w-5 h-5 text-indigo-300 mt-1" />
-              <div className="flex-1">
-                <textarea
-                  name="jobDescription"
-                  className="w-full bg-transparent outline-none text-white placeholder-gray-400 text-lg resize-none min-h-[80px] max-h-40"
-                  placeholder="Paste Job Description (max 1000 words, optional)"
-                  value={form.jobDescription}
-                  onChange={handleChange}
-                  maxLength={8000} // ~1000 words
-                />
-                <div className="text-xs text-gray-400 mt-1">
-                  {form.jobDescription.length}/8000 characters
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-x-hidden">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #6366f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #8b5cf6;
+        }
+      `}</style>
+      {/* Enhanced background elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-slate-900/10 to-transparent"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.05)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
+      <div className="absolute top-20 right-10 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+      
+      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl shadow-lg shadow-violet-500/5 border-b border-slate-800/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-20">
+            <div
+              onClick={() => navigate('/home')}
+              className="flex items-center gap-3 group cursor-pointer"
+            >
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <BrainCircuit className="h-6 w-6 text-white" />
                 </div>
               </div>
+              <span className="text-2xl font-bold">
+                <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                  Prep
+                </span>
+                <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                  Mate
+                </span>
+              </span>
             </div>
-            {/* Resume Textarea */}
-            <div className="flex items-start gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/10">
-              <FileText className="w-5 h-5 text-indigo-300 mt-1" />
-              <div className="flex-1">
-                <textarea
-                  name="resumeText"
-                  className="w-full bg-transparent outline-none text-white placeholder-gray-400 text-lg resize-none min-h-[80px] max-h-40"
-                  placeholder="Paste your resume content including objective section here (required)"
-                  value={form.resumeText}
+            
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate('/home')}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
+              >
+                <span className="relative z-10">Home</span>
+                <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              </button>
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
+              >
+                <span className="relative z-10">Dashboard</span>
+                <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              </button>
+              <button 
+                onClick={async () => {
+                  await logout();
+                  navigate('/');
+                }}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <main className="flex-1 flex items-center justify-center px-4 py-6 pt-24 relative z-10 w-full overflow-auto">
+        <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto">
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
+                1
+              </div>
+              <span className="text-violet-400 font-medium text-sm">Details</span>
+            </div>
+            <div className="w-12 h-0.5 bg-slate-700"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                2
+              </div>
+              <span className="text-slate-500 font-medium text-sm">Check</span>
+            </div>
+            <div className="w-12 h-0.5 bg-slate-700"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 text-sm font-semibold">
+                3
+              </div>
+              <span className="text-slate-500 font-medium text-sm">Interview</span>
+            </div>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              Configure Session
+            </h1>
+            <p className="text-slate-400 text-sm">Customize the AI persona and context for your mock interview.</p>
+          </div>
+
+          {/* Main Card */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+            {/* Error Display */}
+            {error && (
+              <div className="mx-6 mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2">
+                <div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-red-400 text-xs">!</span>
+                </div>
+                <span className="text-red-300 text-xs">{error}</span>
+              </div>
+            )}
+            
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5" />
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+                  placeholder="Enter your full name"
+                  value={form.name}
                   onChange={handleChange}
                   required
                 />
-                <div className="text-xs text-gray-400 mt-1">
-                  {form.resumeText.length}/10000 characters
+              </div>
+
+              {/* Job Role */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Job Role
+                </label>
+                <input
+                  type="text"
+                  name="jobRole"
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+                  placeholder="e.g., Software Engineer"
+                  value={form.jobRole}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Company */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5" />
+                  Company <span className="text-slate-600 text-xs">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  name="company"
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+                  placeholder="Target company"
+                  value={form.company}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Experience Level with Number Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5" />
+                  Years of Experience
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={decrementExperience}
+                    className="w-9 h-9 rounded-lg bg-slate-800/50 border border-slate-700 hover:bg-slate-700 hover:border-violet-500/50 text-white flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="text"
+                    name="experience"
+                    className="flex-1 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white text-center text-lg font-semibold placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all"
+                    placeholder="0"
+                    value={form.experience}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={incrementExperience}
+                    className="w-9 h-9 rounded-lg bg-slate-800/50 border border-slate-700 hover:bg-slate-700 hover:border-violet-500/50 text-white flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Interview Type */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  Interview Type
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-left text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all flex items-center justify-between"
+                  >
+                    <span className={form.interviewType ? 'text-white' : 'text-slate-500'}>
+                      {form.interviewType || 'Select interview type'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden">
+                      {interviewTypes.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => {
+                            setForm(f => ({ ...f, interviewType: opt }));
+                            setIsDropdownOpen(false);
+                          }}
+                          className="w-full px-3 py-2 text-sm text-left text-white hover:bg-violet-600/20 transition-colors flex items-center justify-between"
+                        >
+                          <span>{opt}</span>
+                          {form.interviewType === opt && (
+                            <svg className="w-4 h-4 text-violet-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Job Description */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  Job Description <span className="text-slate-600 text-xs">(Optional)</span>
+                </label>
+                <textarea
+                  name="jobDescription"
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all resize-none custom-scrollbar"
+                  placeholder="Paste the job description..."
+                  rows={3}
+                  value={form.jobDescription}
+                  onChange={handleChange}
+                  maxLength={8000}
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#6366f1 transparent'
+                  }}
+                />
+                <div className="flex justify-end text-xs text-slate-500">
+                  <span>{form.jobDescription.length}/8000</span>
+                </div>
+              </div>
+
+              {/* Resume */}
+              <div className="space-y-1.5 md:col-span-2">
+                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  Resume Content
+                </label>
+                <textarea
+                  name="resumeText"
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all resize-none custom-scrollbar"
+                  placeholder="Paste your resume content..."
+                  rows={3}
+                  value={form.resumeText}
+                  onChange={handleChange}
+                  required
+                  maxLength={10000}
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#6366f1 transparent'
+                  }}
+                />
+                <div className="flex justify-end text-xs text-slate-500">
+                  <span>{form.resumeText.length}/10000</span>
                 </div>
               </div>
             </div>
+
+            {/* Footer Actions */}
+            <div className="px-6 pb-6 pt-4 border-t border-slate-800">
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-slate-300 text-base bg-slate-800/50 border border-slate-700 hover:bg-slate-700 hover:border-slate-600 transition-all duration-300"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  <span>Back to Dashboard</span>
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 group relative px-6 py-3 rounded-xl font-semibold text-white text-base bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-[1.02] overflow-hidden flex items-center justify-center gap-2"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
+                  <span className="relative z-10">Continue to System Check</span>
+                  <ArrowRight className="w-5 h-5 relative z-10" />
+                </button>
+              </div>
+            </div>
           </div>
-          <button
-            type="submit"
-            className="mt-8 px-10 py-4 rounded-2xl font-bold text-white text-xl bg-gradient-to-r from-indigo-500 via-sky-400 to-purple-500 shadow-xl transition-all duration-300 focus:outline-none ring-2 ring-purple-400/40 ring-offset-2 hover:scale-105 hover:shadow-purple-500/60 animate-pulse-glow"
-          >
-            Next
-          </button>
-          <button
-            type="button"
-            className="mt-4 text-sky-300 hover:underline text-base"
-            onClick={() => {
-              sessionStorage.removeItem('interviewForm');
-              setForm({
-                name: '',
-                jobRole: '',
-                company: '',
-                experience: '',
-                interviewType: '',
-                jobDescription: '',
-                resumeText: '',
-              });
-              setResumeName('');
-              setError('');
-              navigate('/dashboard');
-            }}
-          >
-            ← Back to Dashboard
-          </button>
         </form>
       </main>
     </div>

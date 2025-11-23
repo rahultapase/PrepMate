@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { BrainCircuit, User, LayoutGrid, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail } from 'lucide-react';
+import { BrainCircuit, User, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { setDoc, doc, getDoc, collection, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
@@ -102,10 +102,6 @@ export default function Dashboard() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
   };
 
   // Skeleton Loader for Profile
@@ -387,37 +383,54 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 relative overflow-x-hidden">
       <div className="mesh-grid absolute inset-0 opacity-20 pointer-events-none z-0"></div>
-      <header className="relative z-10 w-full py-6">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3 justify-between">
-          <div 
-            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => navigate('/home')}
-          >
-            <BrainCircuit className="h-8 w-8 text-violet-500 animate-pulse-glow" />
-            <span className="text-2xl font-bold">
-              <span className="text-white">Prep</span>
-              <span className="gradient-text">Mate</span>
-            </span>
-            <span className="ml-4 text-lg text-sky-300 font-semibold">Home</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white font-semibold shadow focus:outline-none"
-              onClick={() => setProfileOpen(true)}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl shadow-lg shadow-violet-500/5 border-b border-slate-800/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-20">
+            <div
+              onClick={() => navigate('/home')}
+              className="flex items-center gap-3 group cursor-pointer"
             >
-              <User className="w-5 h-5" />
-              Profile
-            </button>
-            <button
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white font-semibold shadow focus:outline-none"
-              onClick={handleLogout}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0l3-3m-3 3l3 3" />
-              </svg>
-              Logout
-            </button>
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
+                <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <BrainCircuit className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <span className="text-2xl font-bold">
+                <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                  Prep
+                </span>
+                <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                  Mate
+                </span>
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate('/home')}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
+              >
+                <span className="relative z-10">Home</span>
+                <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              </button>
+              <button
+                onClick={() => setProfileOpen(true)}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
+              >
+                <span className="relative z-10">Profile</span>
+                <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              </button>
+              <button 
+                onClick={async () => {
+                  await logout();
+                  navigate('/');
+                }}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </header>
