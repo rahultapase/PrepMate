@@ -88,7 +88,7 @@ export const HeroSection= () =>{
                 className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white text-lg bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-2xl shadow-violet-500/30 transition-all duration-300 hover:shadow-violet-500/50 hover:scale-105 overflow-hidden w-fit"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
-                <span className="relative z-10">Start Practicing Free</span>
+                <span className="relative z-10">Start Practicing</span>
                 <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               
