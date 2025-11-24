@@ -541,11 +541,11 @@ const Home = () =>{
                 <div className="flex flex-col h-full overflow-y-auto custom-scrollbar">
                   
                   {/* Decorative Banner */}
-                  <div className="h-32 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 relative shrink-0">
+                  <div className="h-32 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 relative shrink-0">
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-30"></div>
                   </div>
 
-                  <div className="px-8 pb-8 -mt-12 flex flex-col flex-1">
+                  <div className="px-8 pb-8 -mt-12 pt-1 flex flex-col flex-1">
                     {/* Header with Avatar */}
                     <div className="flex justify-between items-end mb-6">
                       <div className="relative">
@@ -560,7 +560,7 @@ const Home = () =>{
                       {!editMode && (
                         <button 
                           onClick={() => setEditMode(true)}
-                          className="mb-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all group"
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all group"
                         >
                           <Pencil className="w-4 h-4 text-violet-400 group-hover:text-violet-300" />
                           Edit Profile
@@ -671,16 +671,16 @@ const Home = () =>{
                           <button 
                             type="submit"
                             disabled={saving}
-                            className="flex-1 group relative px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="flex-1 group relative px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                           >
                             {saving ? (
                               <span className="flex items-center justify-center gap-2">
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin" />
                                 Saving...
                               </span>
                             ) : (
                               <span className="flex items-center justify-center gap-2">
-                                <CheckCircle2 className="w-5 h-5" />
+                                <CheckCircle2 className="w-4 h-4" />
                                 Save Changes
                               </span>
                             )}

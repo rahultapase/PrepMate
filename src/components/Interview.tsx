@@ -457,8 +457,8 @@ export default function Interview() {
             </div>
 
             {/* Footer Actions */}
-            <div className="px-6 pb-6 pt-4 border-t border-slate-800">
-              <div className="flex items-center gap-4">
+            <div className="px-6 pb-6">
+              <div className="flex items-center justify-center gap-4">
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
@@ -469,7 +469,7 @@ export default function Interview() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 group relative px-6 py-3 rounded-xl font-semibold text-white text-base bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-[1.02] overflow-hidden flex items-center justify-center gap-2"
+                  className="group relative px-8 py-3 rounded-xl font-semibold text-white text-base bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-[1.02] overflow-hidden flex items-center justify-center gap-2"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
                   <span className="relative z-10">Continue to System Check</span>
@@ -480,6 +480,17 @@ export default function Interview() {
           </div>
         </form>
       </main>
+
+      <style>{`
+        /* Hide scrollbar but keep functionality */
+        * {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        *::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+      `}</style>
     </div>
   );
 } 

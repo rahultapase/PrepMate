@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { BrainCircuit, User, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail } from 'lucide-react';
+import { BrainCircuit, User, Pencil, Trash2, X, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Loader2, Mail, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { setDoc, doc, getDoc, collection, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
@@ -174,7 +174,13 @@ export default function Dashboard() {
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 7;
+  const itemsPerPage = 6;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedInterviewTypes, setSelectedInterviewTypes] = useState<string[]>([]);
+  const [selectedDateRange, setSelectedDateRange] = useState<string>('all');
+  const [selectedScoreRange, setSelectedScoreRange] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   // Helper function to get interview type from various sources
   const getInterviewType = (item: any) => {
@@ -455,11 +461,11 @@ export default function Dashboard() {
                 <div className="flex flex-col h-full overflow-y-auto custom-scrollbar">
                   
                   {/* Decorative Banner */}
-                  <div className="h-32 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 relative shrink-0">
+                  <div className="h-32 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 relative shrink-0">
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-30"></div>
                   </div>
 
-                  <div className="px-8 pb-8 -mt-12 flex flex-col flex-1">
+                  <div className="px-8 pb-8 -mt-12 pt-1 flex flex-col flex-1">
                     {/* Header with Avatar */}
                     <div className="flex justify-between items-end mb-6">
                       <div className="relative">
@@ -474,7 +480,7 @@ export default function Dashboard() {
                       {!editMode && (
                         <button 
                           onClick={() => setEditMode(true)}
-                          className="mb-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all group"
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-all group"
                         >
                           <Pencil className="w-4 h-4 text-violet-400 group-hover:text-violet-300" />
                           Edit Profile
@@ -585,16 +591,16 @@ export default function Dashboard() {
                           <button 
                             type="submit"
                             disabled={saving}
-                            className="flex-1 group relative px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="flex-1 group relative px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                           >
                             {saving ? (
                               <span className="flex items-center justify-center gap-2">
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                                <Loader2 className="w-4 h-4 animate-spin" />
                                 Saving...
                               </span>
                             ) : (
                               <span className="flex items-center justify-center gap-2">
-                                <CheckCircle2 className="w-5 h-5" />
+                                <CheckCircle2 className="w-4 h-4" />
                                 Save Changes
                               </span>
                             )}
@@ -722,10 +728,196 @@ export default function Dashboard() {
 
         {/* Interview Spaces Section */}
         <div className="mb-6 mt-14">
-          <h2 className="text-2xl font-bold mb-2">
-            <span className="text-white">Your Interview </span>
-            <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">History</span>
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold">
+              <span className="text-white">Your Interview </span>
+              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">History</span>
+            </h2>
+            
+            {/* Search and Filter */}
+            <div className="flex items-center gap-3">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search interviews..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all w-64"
+                />
+              </div>
+              
+              {/* Filter Button */}
+              <button
+                onClick={() => setFilterOpen(!filterOpen)}
+                className="p-2 rounded-lg bg-slate-800/50 border border-slate-700 hover:bg-slate-700/50 transition-all"
+              >
+                <Filter className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+          </div>
+
+  
+          {/* Filter Dropdown */}
+          {filterOpen && (
+            <div className="mb-8 bg-[#0F1117] border border-white/10 rounded-2xl p-6 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                {/* 1. Interview Type Filter (Styled as Chips) */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                    Interview Type
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {['Technical', 'Behavioral', 'HR', 'Case Study', 'Mixed'].map((type) => {
+                      const isSelected = selectedInterviewTypes.includes(type);
+                      return (
+                        <label 
+                          key={type} 
+                          className={`
+                            cursor-pointer px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border
+                            ${isSelected 
+                              ? 'bg-violet-600 border-violet-500 text-white shadow-[0_0_15px_rgba(124,58,237,0.3)]' 
+                              : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}
+                          `}
+                        >
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedInterviewTypes([...selectedInterviewTypes, type]);
+                              } else {
+                                setSelectedInterviewTypes(selectedInterviewTypes.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          {type}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Date Range Filter (Custom Radio List) */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Date Range
+                  </h4>
+                  <div className="space-y-1">
+                    {[
+                      { value: 'all', label: 'All Time' },
+                      { value: '7days', label: 'Last 7 Days' },
+                      { value: '30days', label: 'Last 30 Days' },
+                      { value: '3months', label: 'Last 3 Months' },
+                      { value: '6months', label: 'Last 6 Months' }
+                    ].map((option) => (
+                      <label key={option.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                        <div className="relative flex items-center">
+                          <input
+                            type="radio"
+                            name="dateRange"
+                            className="peer appearance-none w-4 h-4 border-2 border-slate-600 rounded-full checked:border-violet-500 checked:bg-violet-500 transition-all"
+                            checked={selectedDateRange === option.value}
+                            onChange={() => setSelectedDateRange(option.value)}
+                          />
+                          <div className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
+                        <span className={`text-sm transition-colors ${selectedDateRange === option.value ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Score Range Filter (Custom Radio List) */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    Performance
+                  </h4>
+                  <div className="space-y-1">
+                    {[
+                      { value: 'all', label: 'All Scores' },
+                      { value: 'excellent', label: 'Excellent (8-10)', color: 'text-green-400' },
+                      { value: 'good', label: 'Good (6-8)', color: 'text-emerald-400' },
+                      { value: 'average', label: 'Average (4-6)', color: 'text-yellow-400' },
+                      { value: 'poor', label: 'Poor (<4)', color: 'text-red-400' }
+                    ].map((option) => (
+                      <label key={option.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                        <div className="relative flex items-center">
+                          <input
+                            type="radio"
+                            name="scoreRange"
+                            className="peer appearance-none w-4 h-4 border-2 border-slate-600 rounded-full checked:border-violet-500 checked:bg-violet-500 transition-all"
+                            checked={selectedScoreRange === option.value}
+                            onChange={() => setSelectedScoreRange(option.value)}
+                          />
+                          <div className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
+                        <span className={`text-sm transition-colors ${selectedScoreRange === option.value ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Sort By (Custom Radio List) */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+                    Sort By
+                  </h4>
+                  <div className="space-y-1">
+                    {[
+                      { value: 'newest', label: 'Newest First' },
+                      { value: 'oldest', label: 'Oldest First' },
+                      { value: 'highest', label: 'Highest Score' },
+                      { value: 'lowest', label: 'Lowest Score' }
+                    ].map((option) => (
+                      <label key={option.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                        <div className="relative flex items-center">
+                          <input
+                            type="radio"
+                            name="sortBy"
+                            className="peer appearance-none w-4 h-4 border-2 border-slate-600 rounded-full checked:border-violet-500 checked:bg-violet-500 transition-all"
+                            checked={sortBy === option.value}
+                            onChange={() => setSortBy(option.value)}
+                          />
+                          <div className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
+                        <span className={`text-sm transition-colors ${sortBy === option.value ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-300'}`}>
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer / Clear Button */}
+              <div className="mt-8 pt-4 border-t border-white/5 flex justify-end">
+                <button
+                  onClick={() => {
+                    setSelectedInterviewTypes([]);
+                    setSelectedDateRange('all');
+                    setSelectedScoreRange('all');
+                    setSortBy('newest');
+                  }}
+                  className="group flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+                >
+                  <svg className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+          )}
             {loadingHistory ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3].map((i) => (
@@ -758,6 +950,65 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {interviewHistory
+                  .filter((item) => {
+                    // Search filter
+                    if (searchQuery) {
+                      const query = searchQuery.toLowerCase();
+                      const jobRole = item.userInputs?.jobRole?.toLowerCase() || '';
+                      const company = item.userInputs?.company?.toLowerCase() || '';
+                      const interviewType = getInterviewType(item).toLowerCase();
+                      if (!jobRole.includes(query) && !company.includes(query) && !interviewType.includes(query)) {
+                        return false;
+                      }
+                    }
+
+                    // Interview Type filter
+                    if (selectedInterviewTypes.length > 0) {
+                      const itemType = getInterviewType(item);
+                      if (!selectedInterviewTypes.includes(itemType)) {
+                        return false;
+                      }
+                    }
+
+                    // Date Range filter
+                    if (selectedDateRange !== 'all' && item.timestamp) {
+                      const itemDate = new Date(item.timestamp);
+                      const now = new Date();
+                      const daysDiff = Math.floor((now.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
+                      
+                      if (selectedDateRange === '7days' && daysDiff > 7) return false;
+                      if (selectedDateRange === '30days' && daysDiff > 30) return false;
+                      if (selectedDateRange === '3months' && daysDiff > 90) return false;
+                      if (selectedDateRange === '6months' && daysDiff > 180) return false;
+                    }
+
+                    // Score Range filter
+                    if (selectedScoreRange !== 'all' && item.feedback?.overallScore) {
+                      const score = item.feedback.overallScore;
+                      if (selectedScoreRange === 'excellent' && score < 8) return false;
+                      if (selectedScoreRange === 'good' && (score < 6 || score >= 8)) return false;
+                      if (selectedScoreRange === 'average' && (score < 4 || score >= 6)) return false;
+                      if (selectedScoreRange === 'poor' && score >= 4) return false;
+                    }
+
+                    return true;
+                  })
+                  .sort((a, b) => {
+                    // Sorting logic
+                    if (sortBy === 'newest') {
+                      return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
+                    }
+                    if (sortBy === 'oldest') {
+                      return new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime();
+                    }
+                    if (sortBy === 'highest') {
+                      return (b.feedback?.overallScore || 0) - (a.feedback?.overallScore || 0);
+                    }
+                    if (sortBy === 'lowest') {
+                      return (a.feedback?.overallScore || 0) - (b.feedback?.overallScore || 0);
+                    }
+                    return 0;
+                  })
                   .slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)
                   .map((item) => (
                   <div key={item.id} className="group bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden hover:border-violet-500/30">
@@ -1116,67 +1367,84 @@ export default function Dashboard() {
       )}
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && itemToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-gray-900/90 border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-md relative">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-red-500/20 rounded-full">
-                <Trash2 className="w-8 h-8 text-red-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white">Delete Interview History</h2>
-            </div>
-            <div className="text-white mb-6">
-              <p className="text-gray-300 mb-4">
-                Are you sure you want to delete this interview history? This action cannot be undone.
-              </p>
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                <div className="text-sm text-gray-400 mb-1">Interview Type:</div>
-                <div className="text-white font-medium">{getInterviewType(itemToDelete)}</div>
-                <div className="text-sm text-gray-400 mb-1 mt-2">Date:</div>
-                <div className="text-white font-medium">
-                  {itemToDelete.timestamp ? new Date(itemToDelete.timestamp).toLocaleString() : 'N/A'}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-all duration-300 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
-                onClick={() => deleteInterviewHistory(itemToDelete)}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Deleting...
-                  </div>
-                ) : (
-                  'Delete'
-                )}
-              </button>
-              <button
-                className="flex-1 px-6 py-3 rounded-xl font-bold text-gray-300 bg-gray-700 hover:bg-gray-600 transition-all duration-300 focus:outline-none"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="relative w-full max-w-md">
+            {/* Glow Effect */}
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-red-500 via-pink-500 to-red-500 rounded-3xl opacity-20 blur-xl"></div>
+            
+            <div className="relative bg-[#1a1d2e] backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8">
+              {/* Close Button */}
+              <button 
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-all" 
                 onClick={() => {
                   setDeleteModalOpen(false);
                   setItemToDelete(null);
-                }}
+                }} 
+                aria-label="Close"
                 disabled={deleting}
               >
-                Cancel
+                <X className="w-5 h-5" />
               </button>
+
+              {/* Icon and Title */}
+              <div className="flex flex-col items-center text-center mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/30 flex items-center justify-center mb-4">
+                  <Trash2 className="w-8 h-8 text-red-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Delete Interview History</h2>
+                <p className="text-slate-400 text-sm">
+                  Are you sure you want to delete this interview history? This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Interview Details */}
+              <div className="bg-slate-900/50 rounded-xl p-5 border border-slate-700/50 mb-6 space-y-3">
+                <div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Interview Type</div>
+                  <div className="text-white font-semibold text-lg">{getInterviewType(itemToDelete)}</div>
+                </div>
+                <div className="border-t border-slate-700/50 pt-3">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Date</div>
+                  <div className="text-slate-300 font-medium">
+                    {itemToDelete.timestamp ? new Date(itemToDelete.timestamp).toLocaleString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'N/A'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-300 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-red-500/20"
+                  onClick={() => deleteInterviewHistory(itemToDelete)}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </div>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+                <button
+                  className="flex-1 px-6 py-3 rounded-xl font-semibold text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-slate-600 transition-all duration-300 focus:outline-none"
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setItemToDelete(null);
+                  }}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-            <button 
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl" 
-              onClick={() => {
-                setDeleteModalOpen(false);
-                setItemToDelete(null);
-              }} 
-              aria-label="Close"
-              disabled={deleting}
-            >
-              &times;
-            </button>
           </div>
         </div>
       )}

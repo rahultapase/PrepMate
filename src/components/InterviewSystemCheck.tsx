@@ -170,7 +170,7 @@ export default function InterviewSystemCheck() {
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
                 <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <BrainCircuit className="h-6 w-6 text-white" />
+                  <BrainCircuit className="h-5 w-5 text-white" />
                 </div>
               </div>
               <span className="text-2xl font-bold">
@@ -361,7 +361,7 @@ export default function InterviewSystemCheck() {
             </div>
 
             {/* Footer with Buttons */}
-            <div className="px-5 pb-4 pt-2 border-t border-slate-800">
+            <div className="px-5 pb-4">
               <div className="flex items-center justify-center gap-4">
                 <button
                   type="button"
@@ -377,13 +377,24 @@ export default function InterviewSystemCheck() {
                   disabled={isChrome === false || camAllowed !== true || micAllowed !== true}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
-                  <span className="relative z-10">Start Live Session</span>
+                  <span className="relative z-10">Start Interview</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
       </main>
+      
+      <style>{`
+        /* Hide scrollbar but keep functionality */
+        * {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        *::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+      `}</style>
     </div>
   );
 } 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { 
   BrainCircuit, Mic, MicOff, Square, Play, SkipForward, 
-  RefreshCw, Video, Clock, AlertCircle, CheckCircle2, MoreHorizontal 
+  RefreshCw, Video, Clock, AlertCircle, MoreHorizontal, StopCircle, Sparkles, Bot 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
@@ -917,13 +917,16 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
             <div className="flex items-center justify-between">
                {/* Left: Logo + LIVE indicator */}
                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-gradient-to-br from-violet-600 to-purple-600 rounded-xl shadow-lg">
-                        <BrainCircuit className="h-6 w-6 text-white" />
+                  <div className="flex items-center gap-3 group cursor-pointer">
+                     <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                           <BrainCircuit className="h-5 w-5 text-white" />
+                        </div>
                      </div>
-                     <span className="text-2xl font-bold tracking-tight">
-                        <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Prep</span>
-                        <span className="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">Mate</span>
+                     <span className="text-2xl font-bold">
+                        <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Prep</span>
+                        <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">Mate</span>
                      </span>
                   </div>
                   
@@ -936,8 +939,9 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                {/* Right: Session count + End Session */}
                <div className="flex items-center gap-4">
                   {sessionCount > 0 && (
-                     <div className="text-sm text-blue-400 font-medium">
-                        {sessionCount} sessions completed
+                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                        <Sparkles className="w-4 h-4 text-violet-400" />
+                        <span className="text-sm text-violet-400 font-medium">{sessionCount} sessions completed</span>
                      </div>
                   )}
                   <button 
@@ -950,9 +954,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                         : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20'}
                     `}
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" />
-                    </svg>
+                    <StopCircle className="w-5 h-5" />
                     {isProcessingFeedback ? 'Processing...' : isSessionEnded ? 'Ended' : 'End Session'}
                   </button>
                </div>
@@ -972,7 +974,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                
                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
                   <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-lg font-mono font-bold text-red-400">{formatTime(timeLeft)}</span>
+                  <span className="text-md font-mono font-bold text-red-400">{formatTime(timeLeft)}</span>
                </div>
             </div>
          </div>
@@ -989,7 +991,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                {/* AI Avatar Card */}
                <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl group h-[350px]">
                   <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
-                     <div className={`w-1.5 h-1.5 rounded-full ${isSpeaking ? 'bg-violet-400 animate-pulse' : 'bg-slate-500'}`}></div>
+                     <Bot className="w-4 h-4 text-violet-400" />
                      AI Interviewer
                   </div>
                   
@@ -1012,19 +1014,19 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
 
                {/* Question Card */}
                <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-2 px-3 py-1 bg-violet-500/10 rounded-lg border border-violet-500/20">
-                        <span className="text-xs font-bold text-violet-400">Q{currentQuestionIdx + 1}</span>
-                        <span className="text-xs text-slate-400">of {questions.length}</span>
+                  <div className="absolute top-4 left-4">
+                     <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg border border-violet-500/30 shadow-lg shadow-violet-500/10">
+                        <span className="text-sm font-bold bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent">Q{currentQuestionIdx + 1}</span>
+                        <span className="text-sm text-slate-300">of {questions.length}</span>
                      </div>
                   </div>
                   
                   {loadingQuestions ? (
-                     <div className="flex items-center justify-center flex-1">
+                     <div className="flex items-center justify-center flex-1 mt-6">
                         <div className="text-slate-400 animate-pulse text-sm">Generating questions...</div>
                      </div>
                   ) : (
-                     <div className="flex-1">
+                     <div className="flex-1 mt-6">
                         <h2 className="text-xl md:text-lg font-semibold text-white leading-relaxed">
                            {currentQuestion}
                         </h2>
@@ -1039,7 +1041,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                {/* User Webcam Card */}
                <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl h-[350px]">
                   <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
-                     <div className={`w-1.5 h-1.5 rounded-full ${camAllowed ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                     <Video className="w-4 h-4 text-green-400" />
                      You
                   </div>
 
@@ -1060,27 +1062,27 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
 
                {/* Your Answer / Transcript Card */}
                <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-2">
-                        {isAnswering && (
-                           <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                           </span>
-                        )}
-                        <span className="text-sm font-semibold text-white">Your Answer</span>
-                     </div>
-                     {isAnswering && answerTimerStarted && (
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                     {isAnswering && (
+                        <span className="relative flex h-2 w-2">
+                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                     )}
+                     <span className="text-md font-semibold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">Your Answer</span>
+                  </div>
+                  {isAnswering && answerTimerStarted && (
+                     <div className="absolute top-4 right-4">
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${answerTimeLeft <= 30 ? 'bg-red-500/10 border border-red-500/20' : 'bg-blue-500/10 border border-blue-500/20'}`}>
                            <Clock className="w-3 h-3" />
                            <span className={`text-xs font-mono font-bold ${answerTimeLeft <= 30 ? 'text-red-400' : 'text-blue-400'}`}>
                               {formatTime(answerTimeLeft)}
                            </span>
                         </div>
-                     )}
-                  </div>
+                     </div>
+                  )}
                   
-                  <div className="flex-1">
+                  <div className="flex-1 mt-6">
                      {isAnswering ? (
                         <p className="text-base text-white/90 leading-relaxed">{transcript || "Listening..."}</p>
                      ) : (
@@ -1104,7 +1106,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                </svg>
-               <span className="font-medium">Repeat</span>
+               <span className="font-medium">Repeat Question</span>
             </button>
 
             {/* Record / Stop Button (Primary) */}
@@ -1156,6 +1158,18 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
 
          </div>
       </main>
+
+      <style>{`
+        /* Hide scrollbar but keep functionality */
+        * {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        *::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+      `}</style>
+
       
       {/* Feedback Modal */}
       {showRatingModal && (
