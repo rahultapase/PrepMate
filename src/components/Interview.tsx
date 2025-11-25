@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrainCircuit, UploadCloud, FileText, User, Briefcase, Building2, Layers, ClipboardList, Plus, Minus, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useInputSanitization } from '../utils/sanitization';

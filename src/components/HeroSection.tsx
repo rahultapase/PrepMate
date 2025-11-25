@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrainCircuit, User, Sparkles, ArrowRight, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

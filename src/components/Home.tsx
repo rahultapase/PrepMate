@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { BrainCircuit, User, Pencil, X, Sparkles, Zap, ArrowRight, AlertCircle, CheckCircle2, GraduationCap, Calendar, BookOpen, Briefcase, Target, Menu, Loader2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -98,7 +98,7 @@ const Home = () =>{
     if (profileOpen) {
       fetchProfile();
     }
-  }, [profileOpen, user?.uid, dataLoaded]);
+  }, [profileOpen, user?.uid, dataLoaded, editMode]);
 
   const handleProfileSave = async () => {
     setError('');
