@@ -71,18 +71,48 @@ PrepMate is a next-generation interview preparation platform that uses advanced 
 
 ## 🌐 Deployment (Vercel)
 
-1. **Push your code to GitHub.**
-2. **Go to [Vercel](https://vercel.com/), import your GitHub repo, and follow the prompts.**
-3. **Set your environment variables in the Vercel dashboard (same as your `.env` file).**
+### Quick Deploy ⚡
+
+1. **Push your code to GitHub**
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
+
+2. **Import to Vercel:**
+   - Go to [Vercel](https://vercel.com/new)
+   - Click "Import Project"
+   - Select your GitHub repository
+   - Vercel auto-detects Vite configuration
+
+3. **Add Environment Variables:**
+   - In Vercel dashboard, go to Settings → Environment Variables
+   - Add all variables from your `.env` file:
+     ```
+     VITE_FIREBASE_API_KEY=your_api_key
+     VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+     VITE_FIREBASE_PROJECT_ID=your_project_id
+     VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+     VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+     VITE_FIREBASE_APP_ID=your_app_id
+     VITE_GEMINI_API_KEY=your_gemini_key
+     ```
+   - Select: Production, Preview, and Development
+
 4. **Deploy!**
+   - Click "Deploy"
+   - Wait 2-3 minutes for build to complete
+   - Your app is live! 🎉
+
+5. **Post-Deployment:**
+   - Add your Vercel URL to Firebase Authorized Domains
+   - Firebase Console → Authentication → Settings → Authorized domains
+   - Add: `your-app-name.vercel.app`
+
 
 ## 👨‍💻 Creator
-
 **Rahul Tapase**
-
-## 📄 License & Copyright
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 
 

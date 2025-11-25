@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, X, BrainCircuit, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -22,7 +22,7 @@ export const Header = () => {
     { label: 'About', href: '#about' }
   ];
 
-  const handleNavClick = (e, href, isRoute = false) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, isRoute = false) => {
     e.preventDefault();
     setMobileMenuOpen(false);
     

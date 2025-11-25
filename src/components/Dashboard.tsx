@@ -6,6 +6,51 @@ import { db } from '../firebase';
 import { setDoc, doc, getDoc, collection, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
 import Footer from './Footer';
 
+interface QuestionDetail {
+  question: string;
+  answer: string;
+  communicationScore?: number;
+  fluencyComment?: string;
+  technicalScore?: number;
+  techComment?: string;
+}
+
+interface InterviewHistoryItem {
+  id: string;
+  feedback: {
+    overallScore?: number;
+    strengths?: string[];
+    improvements?: string[];
+    interviewType?: string;
+    [key: string]: unknown;
+  };
+  interviewType: string;
+  questions?: QuestionDetail[];
+  answers?: string[];
+  rawQuestions?: string[];
+  rawAnswers?: string[];
+  overallScore?: number;
+  communicationScore?: number;
+  technicalScore?: number;
+  logicalScore?: number;
+  behavioralScore?: number;
+  logicalBehavioralScore?: number;
+  interviewSummary?: string;
+  overallSuggestions?: string[];
+  userInputs?: {
+    name: string;
+    jobRole: string;
+    company: string;
+    experience: string;
+    interviewType: string;
+    jobDescription: string;
+    resumeText: string;
+    email?: string;
+  };
+  timestamp: string;
+  user: string | null;
+}
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const firstName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'User';
@@ -123,7 +168,7 @@ export default function Dashboard() {
   );
 
   // Delete interview history function
-  const deleteInterviewHistory = async (item: any) => {
+  const deleteInterviewHistory = async (item: InterviewHistoryItem) => {
     if (!item.id) return;
     
     setDeleting(true);
@@ -142,36 +187,18 @@ export default function Dashboard() {
   };
 
   // Open delete confirmation modal
-  const handleDeleteClick = (item: any) => {
+  const handleDeleteClick = (item: InterviewHistoryItem) => {
     setItemToDelete(item);
     setDeleteModalOpen(true);
   };
 
   // Interview history state
-  const [interviewHistory, setInterviewHistory] = useState<Array<{
-    id: string;
-    feedback: any;
-    interviewType: string;
-    questions?: string[];
-    answers?: string[];
-    userInputs?: {
-      name: string;
-      jobRole: string;
-      company: string;
-      experience: string;
-      interviewType: string;
-      jobDescription: string;
-      resumeText: string;
-      email?: string;
-    };
-    timestamp: string;
-    user: string | null;
-  }>>([]);
+  const [interviewHistory, setInterviewHistory] = useState<InterviewHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<InterviewHistoryItem | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<InterviewHistoryItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 6;
@@ -183,7 +210,7 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<string>('newest');
 
   // Helper function to get interview type from various sources
-  const getInterviewType = (item: any) => {
+  const getInterviewType = (item: InterviewHistoryItem): string => {
     // First try userInputs
     if (item.userInputs?.interviewType) {
       return item.userInputs.interviewType;
@@ -193,7 +220,7 @@ export default function Dashboard() {
       return item.interviewType;
     }
     // Finally try to extract from feedback data if available
-    if (item.feedback?.interviewType) {
+    if (typeof item.feedback?.interviewType === 'string') {
       return item.feedback.interviewType;
     }
     return 'N/A';
@@ -240,23 +267,7 @@ export default function Dashboard() {
           const allData = allSnapshot.docs.map(doc => ({ 
             id: doc.id, 
             ...doc.data() 
-          })) as Array<{
-            id: string;
-            feedback: any;
-            interviewType: string;
-            userInputs?: {
-              name: string;
-              jobRole: string;
-              company: string;
-              experience: string;
-              interviewType: string;
-              jobDescription: string;
-              resumeText: string;
-              email?: string;
-            };
-            timestamp: string;
-            user: string | null;
-          }>;
+          })) as InterviewHistoryItem[];
           
           console.log('Current user email:', email);
           console.log('Total feedbacks found:', allData.length);
@@ -309,23 +320,7 @@ export default function Dashboard() {
           const allData = querySnapshot.docs.map(doc => ({ 
             id: doc.id, 
             ...doc.data() 
-          })) as Array<{
-            id: string;
-            feedback: any;
-            interviewType: string;
-            userInputs?: {
-              name: string;
-              jobRole: string;
-              company: string;
-              experience: string;
-              interviewType: string;
-              jobDescription: string;
-              resumeText: string;
-              email?: string;
-            };
-            timestamp: string;
-            user: string | null;
-          }>;
+          })) as InterviewHistoryItem[];
           
           console.log('Fallback - Current user email:', email);
           console.log('Fallback - Total feedbacks found:', allData.length);
@@ -1261,7 +1256,7 @@ export default function Dashboard() {
                       Detailed Question Analysis
                     </div>
                     <div className="grid gap-4">
-                      {selectedFeedback.questions.map((q: any, i: number) => (
+                      {selectedFeedback.questions?.map((q, i: number) => (
                         <div key={i} className="group bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl p-6 border border-white/5 hover:border-violet-500/30 transition-all duration-300">
                           <div className="flex gap-4">
                             <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-sm font-bold border border-white/5">
@@ -1328,7 +1323,7 @@ export default function Dashboard() {
                             </span>
                             <div>
                               <h4 className="font-medium text-white text-lg leading-snug mb-2">{question}</h4>
-                              <p className="text-slate-400 text-sm">{selectedFeedback.rawAnswers[i] || 'No answer recorded'}</p>
+                              <p className="text-slate-400 text-sm">{selectedFeedback.rawAnswers?.[i] || 'No answer recorded'}</p>
                             </div>
                           </div>
                         </div>

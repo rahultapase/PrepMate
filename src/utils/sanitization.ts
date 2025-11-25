@@ -45,15 +45,19 @@ export const sanitizeURL = (input: string): string => {
 
   const url = input.trim();
   
-  // Check for valid URL scheme
-  const validSchemes = ['http:', 'https:', 'mailto:', 'tel:'];
-  const urlObj = new URL(url, window.location.href);
-  
-  if (!validSchemes.includes(urlObj.protocol)) {
+  try {
+    // Check for valid URL scheme
+    const validSchemes = ['http:', 'https:', 'mailto:', 'tel:'];
+    const urlObj = new URL(url, window.location.href);
+    
+    if (!validSchemes.includes(urlObj.protocol)) {
+      return '';
+    }
+
+    return url;
+  } catch {
     return '';
   }
-
-  return url;
 };
 
 // Sanitize email addresses
@@ -111,14 +115,14 @@ export const sanitizeFormInput = (input: string, type: 'text' | 'email' | 'url' 
 };
 
 // Sanitize object properties
-export const sanitizeObject = <T extends Record<string, any>>(obj: T): T => {
-  const sanitized: any = {};
+export const sanitizeObject = <T extends Record<string, unknown>>(obj: T): T => {
+  const sanitized: Record<string, unknown> = {};
   
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string') {
       sanitized[key] = sanitizeHTML(value);
     } else if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value);
+      sanitized[key] = sanitizeObject(value as Record<string, unknown>);
     } else {
       sanitized[key] = value;
     }
@@ -137,10 +141,10 @@ export const sanitizeArray = (arr: string[]): string[] => {
 };
 
 // Validate and sanitize JSON input
-export const sanitizeJSON = (input: string): any => {
+export const sanitizeJSON = (input: string): unknown => {
   try {
     const parsed = JSON.parse(input);
-    return sanitizeObject(parsed);
+    return sanitizeObject(parsed as Record<string, unknown>);
   } catch (error) {
     console.error('Invalid JSON input:', error);
     return null;
@@ -160,7 +164,7 @@ export const sanitizeForDisplay = (input: string): string => {
     .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+\s*=/gi, '') // Remove event handlers
-    .replace(/[&<>"'`=\/]/g, (char) => HTML_ENTITIES[char] || char);
+    .replace(/[&<>"'`=/]/g, (char) => HTML_ENTITIES[char] || char);
 };
 
 // Sanitize input for database storage
@@ -177,7 +181,7 @@ export const sanitizeForStorage = (input: string): string => {
 };
 
 // Validate input length
-export const validateInputLength = (input: string, maxLength: number = 1000): boolean => {
+export const validateInputLength = (input: string, maxLength = 1000): boolean => {
   return typeof input === 'string' && input.length <= maxLength;
 };
 
@@ -255,7 +259,12 @@ export const useInputSanitization = () => {
     return sanitizeFormInput(value, type);
   };
 
-  const validateInput = (value: string, options: any = {}) => {
+  const validateInput = (value: string, options: {
+    type?: 'text' | 'email' | 'url' | 'textarea';
+    maxLength?: number;
+    required?: boolean;
+    allowHTML?: boolean;
+  } = {}) => {
     return validateAndSanitize(value, options);
   };
 

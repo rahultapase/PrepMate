@@ -1,5 +1,4 @@
-import React from 'react';
-import { Facebook, Twitter, Instagram, Linkedin, Github, Youtube, BrainCircuit, Mail, MapPin, Phone } from 'lucide-react';
+import { Twitter, Linkedin, Github, BrainCircuit } from 'lucide-react';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();

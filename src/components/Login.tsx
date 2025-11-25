@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Lock, ArrowRight, Star, Mail, X, Eye, EyeOff } from 'lucide-react';
+import { Lock, ArrowRight, Mail, X, Eye, EyeOff } from 'lucide-react';
 import { Header } from './Header';
 
 export default function Login() {
@@ -25,9 +25,9 @@ export default function Login() {
       await login(email, password);
       // If login succeeds (email is verified), navigate to home
       navigate('/home', { replace: true });
-    } catch (err: any) {
+    } catch (err) {
       // Check if error is about email verification
-      if (err.message && err.message.includes('verify your email')) {
+      if (err instanceof Error && err.message && err.message.includes('verify your email')) {
         setShowResend(true);
       }
       // Other errors are already displayed by useAuth

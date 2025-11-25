@@ -62,8 +62,10 @@ export default function InterviewSystemCheck() {
         }
 
         // Handle video result
+        let videoStreamToCleanup: MediaStream | null = null;
         if (videoStream.status === 'fulfilled') {
           setCamAllowed(true);
+          videoStreamToCleanup = videoStream.value;
           if (videoRef.current) {
             videoRef.current.srcObject = videoStream.value;
           }
@@ -71,19 +73,19 @@ export default function InterviewSystemCheck() {
           setCamAllowed(false);
           setCamError('Webcam access denied or not found.');
         }
+        
+        // Cleanup video stream
+        return () => {
+          if (videoStreamToCleanup) {
+            videoStreamToCleanup.getTracks().forEach(track => track.stop());
+          }
+        };
       } catch (error) {
         console.error('Device check error:', error);
       }
     };
 
     checkDevices();
-
-    // Cleanup video stream
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -93,7 +95,8 @@ export default function InterviewSystemCheck() {
     // Start audio waveform
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
       audioStream = stream;
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new (AudioContextClass as typeof AudioContext)();
       audioContextRef.current = audioContext;
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();

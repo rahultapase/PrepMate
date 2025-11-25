@@ -27,7 +27,7 @@ export default defineConfig({
           // Separate vendor chunks
           vendor: ['react', 'react-dom'],
           ui: ['lucide-react', 'framer-motion'],
-          utils: ['html2canvas', 'jspdf', 'pdfjs-dist'],
+          utils: ['html2canvas', 'jspdf'],
         },
       },
     },
@@ -41,6 +41,8 @@ export default defineConfig({
     },
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
+    // Ensure source maps are generated for debugging
+    sourcemap: false,
   },
   // Optimize dependencies
   optimizeDeps: {

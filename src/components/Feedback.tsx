@@ -123,12 +123,12 @@ export default function Feedback({ onClose }: { onClose: () => void }) {
         );
 
         console.log('Beautiful feedback email sent successfully:', result);
-      } catch (emailError: any) {
+      } catch (emailError) {
         console.error('Email notification failed, but feedback was saved:', emailError);
         console.error('Email error details:', {
-          name: emailError?.name,
-          message: emailError?.message,
-          stack: emailError?.stack
+          name: emailError instanceof Error ? emailError.name : 'Unknown',
+          message: emailError instanceof Error ? emailError.message : String(emailError),
+          stack: emailError instanceof Error ? emailError.stack : undefined
         });
         // Don't fail the entire submission if email fails
       }

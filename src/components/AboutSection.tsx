@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const AboutSection = () => {
   return (
     <section id="about" className="py-20 bg-gradient-to-b from-black to-gray-900">

@@ -176,7 +176,7 @@ export const withErrorBoundary = <P extends object>(
 
 // Hook for error handling
 export const useErrorHandler = () => {
-  const handleError = (error: Error, errorInfo?: any) => {
+  const handleError = (error: Error, errorInfo?: React.ErrorInfo) => {
     console.error('Error caught by useErrorHandler:', error, errorInfo);
     
     // You can add custom error handling logic here

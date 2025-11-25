@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageSquare, Sparkles } from 'lucide-react';
+import { Send, Sparkles } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 export const ContactSection = () => {
@@ -122,7 +122,7 @@ export const ContactSection = () => {
               {error && <div className="text-red-400 text-sm">{error}</div>}
               {success && <div className="text-green-400 text-sm">Thank you for contacting us! We have received your message and will get back to you soon.</div>}
               <div>
-                <button type="submit" className="w-full inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-50" disabled={loading}>
+                <button type="submit" className="w-full inline-flex justify-center items-center py-3 px-6 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 disabled:opacity-50" disabled={loading}>
                   {loading ? (
                     <>
                       <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>

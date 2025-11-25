@@ -1,12 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
-  BrainCircuit, Mic, MicOff, Square, Play, SkipForward, 
-  RefreshCw, Video, Clock, AlertCircle, MoreHorizontal, StopCircle, Sparkles, Bot 
+  BrainCircuit, Square, 
+  Video, Clock, AlertCircle, StopCircle, Sparkles, Bot 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
-import robotAnimation from "../assets/robot.json";
-import meninterviewAnimation from "../assets/meninterview.json";
 import childboyAnimation from "../assets/childboy.json";
 import { addDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
@@ -28,15 +26,13 @@ export default function Livesession() {
   const [camAllowed, setCamAllowed] = useState<null | boolean>(null);
   const [camError, setCamError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedAnimation, setSelectedAnimation] = useState<any>(robotAnimation);
 
   // Session state: questions, answers, timer
   const [questions, setQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
 
-  // Add at the top with other useState imports
-  const [feedbackData, setFeedbackData] = useState<any>(null);
+  // Feedback modal state
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
 
@@ -110,28 +106,7 @@ export default function Livesession() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Randomly select animation for this session
-  useEffect(() => {
-    const animations = [
-      robotAnimation,
-      meninterviewAnimation,
-      childboyAnimation
-    ];
-    
-    // Check if we already have a selected animation for this session
-    const sessionAnimation = sessionStorage.getItem('sessionAnimation');
-    
-    if (sessionAnimation) {
-      // Use the existing animation for this session
-      const animationIndex = parseInt(sessionAnimation);
-      setSelectedAnimation(animations[animationIndex]);
-    } else {
-      // Select a new random animation for this session
-      const randomIndex = Math.floor(Math.random() * animations.length);
-      sessionStorage.setItem('sessionAnimation', randomIndex.toString());
-      setSelectedAnimation(animations[randomIndex]);
-    }
-  }, []);
+
 
   // Restore session state from sessionStorage on mount
   useEffect(() => {
@@ -193,11 +168,8 @@ export default function Livesession() {
     
     // Check if user provided any answers
     if (answeredPairs.length === 0) {
-      setFeedbackData({ 
-        error: 'No answers provided during the interview session. Please try again and provide responses to the questions.' 
-      });
+      console.error('No answers provided during the interview session');
       setShowRatingModal(true);
-      setIsFeedbackLoading(false);
       setIsProcessingFeedback(false);
       return;
     }
@@ -207,9 +179,7 @@ export default function Livesession() {
         answeredPairs.map(p => p.question),
         answeredPairs.map(p => p.answer)
       );
-      setFeedbackData(feedback);
       setShowRatingModal(true);
-      setIsFeedbackLoading(false);
       // Save to Firestore
       const userEmail = sessionStorage.getItem('userEmail') || user?.email || null;
       const userInputs = (() => {
@@ -240,9 +210,10 @@ export default function Livesession() {
 
       await addDoc(collection(db, "interviewFeedbacks"), feedbackData);
       console.log('Feedback saved successfully to Firestore with user email:', userEmail);
-    } catch (e: any) {
+    } catch (e) {
       console.error('Error generating or saving feedback:', e);
-      setFeedbackData({ error: e.message || 'Failed to generate feedback.' });
+      const errorMessage = e instanceof Error ? e.message : 'Failed to generate feedback.';
+      alert(errorMessage);
       setShowRatingModal(true);
       setIsFeedbackLoading(false);
     } finally {
@@ -995,21 +966,30 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
                      AI Interviewer
                   </div>
                   
+                  {/* Pulsating Circular Rings when Speaking */}
+                  {isSpeaking && (
+                    <>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="absolute w-[200px] h-[200px] rounded-full border-4 border-violet-500/40 animate-ping"></div>
+                        <div className="absolute w-[250px] h-[250px] rounded-full border-4 border-purple-500/30 animate-ping" style={{ animationDelay: '0.3s' }}></div>
+                        <div className="absolute w-[300px] h-[300px] rounded-full border-4 border-indigo-500/20 animate-ping" style={{ animationDelay: '0.6s' }}></div>
+                      </div>
+                      <div className="absolute inset-0 bg-violet-500/10 rounded-3xl animate-pulse"></div>
+                    </>
+                  )}
+                  
                   {/* Lottie Container */}
-                  <div className="w-full h-full flex items-center justify-center p-8 opacity-90 transition-opacity group-hover:opacity-100">
+                  <div className={`relative z-10 w-full h-full flex items-center justify-center p-8 transition-all duration-300 ${
+                    isSpeaking ? 'opacity-100 scale-105' : 'opacity-90 scale-100'
+                  } group-hover:opacity-100`}>
                     <Lottie
                        lottieRef={lottieRef}
-                       animationData={selectedAnimation}
+                       animationData={childboyAnimation}
                        loop={true}
-                       autoplay={false}
+                       autoplay={true}
                        className="max-h-[80%] max-w-[80%]"
                     />
                   </div>
-
-                  {/* Audio Visualizer Effect */}
-                  {isSpeaking && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50 blur-sm animate-pulse"></div>
-                  )}
                </div>
 
                {/* Question Card */}
@@ -1184,7 +1164,6 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
           setAnswerTimerStarted(false);
           setIsSessionEnded(false);
           setTranscript("");
-          setFeedbackData(null);
           sessionStorage.removeItem('liveSessionState');
           sessionStorage.removeItem('liveSessionTimeLeft');
         }} />
