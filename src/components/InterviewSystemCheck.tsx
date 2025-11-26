@@ -68,6 +68,8 @@ export default function InterviewSystemCheck() {
           videoStreamToCleanup = videoStream.value;
           if (videoRef.current) {
             videoRef.current.srcObject = videoStream.value;
+            // Ensure video plays
+            videoRef.current.play().catch(err => console.log('Video play error:', err));
           }
         } else {
           setCamAllowed(false);

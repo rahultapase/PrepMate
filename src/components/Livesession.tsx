@@ -313,9 +313,12 @@ export default function Livesession() {
         setCamAllowed(true);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          // Ensure video plays
+          videoRef.current.play().catch(err => console.log('Video play error:', err));
         }
       })
-      .catch(() => {
+      .catch(err => {
+        console.error('Camera access error:', err);
         setCamAllowed(false);
         setCamError('Webcam access denied or not found.');
       });
