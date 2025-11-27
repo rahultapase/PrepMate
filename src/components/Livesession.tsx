@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { 
-  BrainCircuit, Square, 
-  Video, Clock, AlertCircle, StopCircle, Sparkles, Bot 
+import {
+  BrainCircuit, Square,
+  Video, Clock, AlertCircle, StopCircle, Sparkles, Bot
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Lottie from "lottie-react";
@@ -23,6 +23,7 @@ export default function Livesession() {
   const [answerTimerStarted, setAnswerTimerStarted] = useState(false);
   const [answerTimeLeft, setAnswerTimeLeft] = useState(2 * 60); // 2 minutes in seconds
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [camAllowed, setCamAllowed] = useState<null | boolean>(null);
   const [camError, setCamError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -117,7 +118,7 @@ export default function Livesession() {
         if (parsed.questions) setQuestions(parsed.questions);
         if (parsed.answers) setAnswers(parsed.answers);
         if (typeof parsed.currentQuestionIdx === 'number') setCurrentQuestionIdx(parsed.currentQuestionIdx);
-      } catch (e: any) {}
+      } catch (e: any) { }
     }
   }, []);
 
@@ -165,7 +166,7 @@ export default function Livesession() {
     const answeredPairs = questions
       .map((q, i) => ({ question: q, answer: answers[i] }))
       .filter(pair => pair.answer && pair.answer.trim().length > 0);
-    
+
     // Check if user provided any answers
     if (answeredPairs.length === 0) {
       console.error('No answers provided during the interview session');
@@ -173,7 +174,7 @@ export default function Livesession() {
       setIsProcessingFeedback(false);
       return;
     }
-    
+
     try {
       const feedback = await generateInterviewFeedback(
         answeredPairs.map(p => p.question),
@@ -227,7 +228,7 @@ export default function Livesession() {
       try {
         const form = JSON.parse(saved);
         setInterviewType(form.interviewType || '');
-      } catch (e: any) {}
+      } catch (e: any) { }
     }
   }, []);
 
@@ -235,9 +236,9 @@ export default function Livesession() {
   useEffect(() => {
     const envKey = import.meta.env.VITE_GEMINI_API_KEY;
     const sessionKey = sessionStorage.getItem('geminiApiKey');
-    
+
     const key = envKey || sessionKey;
-    
+
     if (!key) {
       navigate('/system-check', { replace: true });
     } else {
@@ -311,24 +312,29 @@ export default function Livesession() {
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         setCamAllowed(true);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          // Ensure video plays
-          videoRef.current.play().catch(err => console.log('Video play error:', err));
-        }
+        setVideoStream(stream);
       })
       .catch(err => {
         console.error('Camera access error:', err);
         setCamAllowed(false);
         setCamError('Webcam access denied or not found.');
       });
-    // Cleanup video stream on unmount
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && videoStream) {
+      videoRef.current.srcObject = videoStream;
+      videoRef.current.play().catch(err => console.log('Video play error:', err));
+    }
+  }, [videoStream, camAllowed]);
+
+  useEffect(() => {
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [videoStream]);
 
   // On mount, check for Gemini API key in sessionStorage
   useEffect(() => {
@@ -354,8 +360,8 @@ export default function Livesession() {
   }
 
   function buildGeminiPrompt({ interviewType, company, name, graduation, role, experience, jobDescription, resumeText, extraNote, sessionCount = 0 }: InterviewUserData & { extraNote?: string; sessionCount?: number }) {
-    const difficultyNote = sessionCount >= 5 ? 
-      `\n\nIMPORTANT: This candidate has completed ${sessionCount} previous ${interviewType} interview sessions. Please generate more challenging and advanced questions appropriate for an experienced candidate. Focus on complex scenarios, leadership challenges, crisis management, advanced behavioral situations, and sophisticated problem-solving scenarios.` : 
+    const difficultyNote = sessionCount >= 5 ?
+      `\n\nIMPORTANT: This candidate has completed ${sessionCount} previous ${interviewType} interview sessions. Please generate more challenging and advanced questions appropriate for an experienced candidate. Focus on complex scenarios, leadership challenges, crisis management, advanced behavioral situations, and sophisticated problem-solving scenarios.` :
       '';
 
     return `You are acting as a mock interviewer for a candidate preparing for an interview. The candidate's name is ${name}, and they are a ${graduation} graduate with ${experience} experience. They are applying for the role of ${role} at ${company}. The type of interview you are conducting is: ${interviewType}.
@@ -390,7 +396,7 @@ Important Instructions:
     try {
       const userEmail = sessionStorage.getItem('userEmail') || '';
       if (!userEmail) return 0;
-      
+
       const q = query(
         collection(db, 'interviewFeedbacks'),
         where('user', '==', userEmail),
@@ -406,8 +412,8 @@ Important Instructions:
 
   // Function to build continuation questions prompt (no introductory questions)
   function buildContinuationPrompt({ interviewType, company, name, graduation, role, experience, jobDescription, resumeText, sessionCount = 0 }: InterviewUserData & { sessionCount?: number }) {
-    const difficultyNote = sessionCount >= 5 ? 
-      `\n\nIMPORTANT: This candidate has completed ${sessionCount} previous ${interviewType} interview sessions. Please generate more challenging and advanced questions appropriate for an experienced candidate. Focus on complex scenarios, leadership challenges, crisis management, advanced behavioral situations, and sophisticated problem-solving scenarios.` : 
+    const difficultyNote = sessionCount >= 5 ?
+      `\n\nIMPORTANT: This candidate has completed ${sessionCount} previous ${interviewType} interview sessions. Please generate more challenging and advanced questions appropriate for an experienced candidate. Focus on complex scenarios, leadership challenges, crisis management, advanced behavioral situations, and sophisticated problem-solving scenarios.` :
       '';
 
     return `You are continuing a mock interview session. The candidate's name is ${name}, and they are a ${graduation} graduate with ${experience} experience. They are applying for the role of ${role} at ${company}. The type of interview is: ${interviewType}.
@@ -453,13 +459,13 @@ Important Instructions:
     // Get completed sessions count for this interview type
     const sessionCount = await getCompletedSessionsCount(userData.interviewType);
     console.log(`Completed ${sessionCount} sessions for ${userData.interviewType} interviews`);
-    
+
     const prompt = buildGeminiPrompt({ ...userData, sessionCount });
     const userApiKey = sessionStorage.getItem('geminiApiKey');
     if (!userApiKey) {
       throw new Error('API key not found. Please configure your API key first.');
     }
-    
+
     const res = await fetch(API_ENDPOINTS.GEMINI, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -508,7 +514,7 @@ Important Instructions:
     try { form = JSON.parse(formRaw); } catch (e: any) { return; }
     setLoadingQuestions(true);
     setQuestionError('');
-    
+
     // Get session count and generate questions
     getCompletedSessionsCount(form.interviewType)
       .then(count => {
@@ -639,13 +645,13 @@ Important Instructions:
     // Get completed sessions count for this interview type
     const sessionCount = await getCompletedSessionsCount(userData.interviewType);
     console.log(`Completed ${sessionCount} sessions for ${userData.interviewType} interviews (continuation)`);
-    
+
     const prompt = buildContinuationPrompt({ ...userData, sessionCount });
     const userApiKey = sessionStorage.getItem('geminiApiKey');
     if (!userApiKey) {
       throw new Error('API key not found. Please configure your API key first.');
     }
-    
+
     const res = await fetch(API_ENDPOINTS.GEMINI, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -685,7 +691,7 @@ Important Instructions:
     if (!formRaw || !apiKey) return;
     let form;
     try { form = JSON.parse(formRaw); } catch (e: any) { setLoadingQuestions(false); return; }
-    
+
     try {
       const newQuestions = await generateContinuationQuestions({
         interviewType: form.interviewType,
@@ -749,7 +755,7 @@ After you finish evaluating all answered question-answer pairs, also provide a f
 - General feedback or suggestions to improve their overall performance (list all suggestions at the end, not per question).
 
 Here is the data (only questions that were answered):
-${questions.map((q, i) => `Q${i+1}: ${q}\nA${i+1}: ${answers[i]}`).join('\n\n')}
+${questions.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${answers[i]}`).join('\n\n')}
 
 Please return the full output as a valid JSON object structured like this:
 
@@ -800,7 +806,7 @@ After you finish evaluating all answered question-answer pairs, also provide a f
 - General feedback or suggestions to improve their overall performance (list all suggestions at the end, not per question).
 
 Here is the data (only questions that were answered):
-${questions.map((q, i) => `Q${i+1}: ${q}\nA${i+1}: ${answers[i]}`).join('\n\n')}
+${questions.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${answers[i]}`).join('\n\n')}
 
 Please return the full output as a valid JSON object structured like this:
 
@@ -826,12 +832,12 @@ Note: Only include questions that were actually answered by the user. Do not inc
 
 IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explanation, markdown, or formatting. Do NOT use triple backticks. Do NOT add any text before or after the JSON. The response must be a valid JSON object only.`;
     }
-    
+
     const userApiKey = sessionStorage.getItem('geminiApiKey');
     if (!userApiKey) {
       throw new Error('API key not found. Please configure your API key first.');
     }
-    
+
     const res = await fetch(API_ENDPOINTS.GEMINI, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -877,269 +883,268 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
 
   return (
     <div className="min-h-screen bg-[#05050A] text-white overflow-hidden flex flex-col font-sans selection:bg-violet-500/30">
-      
+
       {/* Background Ambience */}
       <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[120px] opacity-40"></div>
-          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] opacity-40"></div>
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[120px] opacity-40"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] opacity-40"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
 
       {/* Header */}
       <header className="border-b border-white/5 bg-black/20 backdrop-blur-md z-50 shrink-0">
-         <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-               {/* Left: Logo + LIVE indicator */}
-               <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 group cursor-pointer">
-                     <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                           <BrainCircuit className="h-5 w-5 text-white" />
-                        </div>
-                     </div>
-                     <span className="text-2xl font-bold">
-                        <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Prep</span>
-                        <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">Mate</span>
-                     </span>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: Logo + LIVE indicator */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 group cursor-pointer">
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl opacity-70 group-hover:opacity-100 blur transition-all duration-300"></div>
+                  <div className="relative bg-gradient-to-br from-violet-600 to-indigo-600 p-2.5 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <BrainCircuit className="h-5 w-5 text-white" />
                   </div>
-                  
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30">
-                     <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                     <span className="text-sm font-bold text-red-400 uppercase tracking-wider">Live</span>
-                  </div>
-               </div>
+                </div>
+                <span className="text-2xl font-bold">
+                  <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Prep</span>
+                  <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">Mate</span>
+                </span>
+              </div>
 
-               {/* Right: Session count + End Session */}
-               <div className="flex items-center gap-4">
-                  {sessionCount > 0 && (
-                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                        <Sparkles className="w-4 h-4 text-violet-400" />
-                        <span className="text-sm text-violet-400 font-medium">{sessionCount} sessions completed</span>
-                     </div>
-                  )}
-                  <button 
-                    onClick={handleEndSession}
-                    disabled={isProcessingFeedback || isSessionEnded}
-                    className={`
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="text-sm font-bold text-red-400 uppercase tracking-wider">Live</span>
+              </div>
+            </div>
+
+            {/* Right: Session count + End Session */}
+            <div className="flex items-center gap-4">
+              {sessionCount > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                  <Sparkles className="w-4 h-4 text-violet-400" />
+                  <span className="text-sm text-violet-400 font-medium">{sessionCount} sessions completed</span>
+                </div>
+              )}
+              <button
+                onClick={handleEndSession}
+                disabled={isProcessingFeedback || isSessionEnded}
+                className={`
                       flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all
                       ${isProcessingFeedback || isSessionEnded
-                        ? 'bg-white/5 text-slate-500 cursor-not-allowed border border-white/5'
-                        : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20'}
+                    ? 'bg-white/5 text-slate-500 cursor-not-allowed border border-white/5'
+                    : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20'}
                     `}
-                  >
-                    <StopCircle className="w-5 h-5" />
-                    {isProcessingFeedback ? 'Processing...' : isSessionEnded ? 'Ended' : 'End Session'}
-                  </button>
-               </div>
+              >
+                <StopCircle className="w-5 h-5" />
+                {isProcessingFeedback ? 'Processing...' : isSessionEnded ? 'Ended' : 'End Session'}
+              </button>
             </div>
-         </div>
+          </div>
+        </div>
       </header>
 
       {/* Info Bar: Interview Type and Timer */}
       <div className="bg-transparent">
-         <div className="max-w-7xl mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-               <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
-                  <div className="w-2 h-2 rounded-full bg-violet-500"></div>
-                  <span className="text-sm text-white/60">Interview Type:</span>
-                  <span className="text-sm font-semibold text-violet-400">{interviewType || 'Technical'}</span>
-               </div>
-               
-               <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
-                  <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-md font-mono font-bold text-red-400">{formatTime(timeLeft)}</span>
-               </div>
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+              <div className="w-2 h-2 rounded-full bg-violet-500"></div>
+              <span className="text-sm text-white/60">Interview Type:</span>
+              <span className="text-sm font-semibold text-violet-400">{interviewType || 'Technical'}</span>
             </div>
-         </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+              <Clock className="w-4 h-4 text-red-400" />
+              <span className="text-md font-mono font-bold text-red-400">{formatTime(timeLeft)}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content Grid */}
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full relative z-10">
-         
-         {/* Two Column Layout */}
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* LEFT COLUMN */}
-            <div className="flex flex-col gap-6">
-               {/* AI Avatar Card */}
-               <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl group h-[350px]">
-                  <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
-                     <Bot className="w-4 h-4 text-violet-400" />
-                     AI Interviewer
-                  </div>
-                  
-                  {/* Pulsating Circular Rings when Speaking */}
-                  {isSpeaking && (
-                    <>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="absolute w-[200px] h-[200px] rounded-full border-4 border-violet-500/40 animate-ping"></div>
-                        <div className="absolute w-[250px] h-[250px] rounded-full border-4 border-purple-500/30 animate-ping" style={{ animationDelay: '0.3s' }}></div>
-                        <div className="absolute w-[300px] h-[300px] rounded-full border-4 border-indigo-500/20 animate-ping" style={{ animationDelay: '0.6s' }}></div>
-                      </div>
-                      <div className="absolute inset-0 bg-violet-500/10 rounded-3xl animate-pulse"></div>
-                    </>
-                  )}
-                  
-                  {/* Lottie Container */}
-                  <div className={`relative z-10 w-full h-full flex items-center justify-center p-8 transition-all duration-300 ${
-                    isSpeaking ? 'opacity-100 scale-105' : 'opacity-90 scale-100'
-                  } group-hover:opacity-100`}>
-                    <Lottie
-                       lottieRef={lottieRef}
-                       animationData={childboyAnimation}
-                       loop={true}
-                       autoplay={true}
-                       className="max-h-[80%] max-w-[80%]"
-                    />
-                  </div>
-               </div>
 
-               {/* Question Card */}
-               <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
-                  <div className="absolute top-4 left-4">
-                     <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg border border-violet-500/30 shadow-lg shadow-violet-500/10">
-                        <span className="text-sm font-bold bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent">Q{currentQuestionIdx + 1}</span>
-                        <span className="text-sm text-slate-300">of {questions.length}</span>
-                     </div>
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* LEFT COLUMN */}
+          <div className="flex flex-col gap-6">
+            {/* AI Avatar Card */}
+            <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl group h-[350px]">
+              <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
+                <Bot className="w-4 h-4 text-violet-400" />
+                AI Interviewer
+              </div>
+
+              {/* Pulsating Circular Rings when Speaking */}
+              {isSpeaking && (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute w-[200px] h-[200px] rounded-full border-4 border-violet-500/40 animate-ping"></div>
+                    <div className="absolute w-[250px] h-[250px] rounded-full border-4 border-purple-500/30 animate-ping" style={{ animationDelay: '0.3s' }}></div>
+                    <div className="absolute w-[300px] h-[300px] rounded-full border-4 border-indigo-500/20 animate-ping" style={{ animationDelay: '0.6s' }}></div>
                   </div>
-                  
-                  {loadingQuestions ? (
-                     <div className="flex items-center justify-center flex-1 mt-6">
-                        <div className="text-slate-400 animate-pulse text-sm">Generating questions...</div>
-                     </div>
-                  ) : (
-                     <div className="flex-1 mt-6">
-                        <h2 className="text-xl md:text-lg font-semibold text-white leading-relaxed">
-                           {currentQuestion}
-                        </h2>
-                        {questionError && <p className="text-red-400 text-sm mt-3">{questionError}</p>}
-                     </div>
-                  )}
-               </div>
+                  <div className="absolute inset-0 bg-violet-500/10 rounded-3xl animate-pulse"></div>
+                </>
+              )}
+
+              {/* Lottie Container */}
+              <div className={`relative z-10 w-full h-full flex items-center justify-center p-8 transition-all duration-300 ${isSpeaking ? 'opacity-100 scale-105' : 'opacity-90 scale-100'
+                } group-hover:opacity-100`}>
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={childboyAnimation}
+                  loop={true}
+                  autoplay={true}
+                  className="max-h-[80%] max-w-[80%]"
+                />
+              </div>
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="flex flex-col gap-6">
-               {/* User Webcam Card */}
-               <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl h-[350px]">
-                  <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
-                     <Video className="w-4 h-4 text-green-400" />
-                     You
-                  </div>
+            {/* Question Card */}
+            <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
+              <div className="absolute top-4 left-4">
+                <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg border border-violet-500/30 shadow-lg shadow-violet-500/10">
+                  <span className="text-sm font-bold bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent">Q{currentQuestionIdx + 1}</span>
+                  <span className="text-sm text-slate-300">of {questions.length}</span>
+                </div>
+              </div>
 
-                  {camAllowed === true ? (
-                     <video
-                       ref={videoRef}
-                       autoPlay
-                       playsInline
-                       className="w-full h-full object-cover transform scale-x-[-1]"
-                     />
-                  ) : (
-                     <div className="text-slate-500 text-sm flex flex-col items-center gap-2">
-                        <AlertCircle className="w-6 h-6" />
-                        {camError || 'Camera Access Required'}
-                     </div>
-                  )}
-               </div>
-
-               {/* Your Answer / Transcript Card */}
-               <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                     {isAnswering && (
-                        <span className="relative flex h-2 w-2">
-                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                        </span>
-                     )}
-                     <span className="text-md font-semibold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">Your Answer</span>
-                  </div>
-                  {isAnswering && answerTimerStarted && (
-                     <div className="absolute top-4 right-4">
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${answerTimeLeft <= 30 ? 'bg-red-500/10 border border-red-500/20' : 'bg-blue-500/10 border border-blue-500/20'}`}>
-                           <Clock className="w-3 h-3" />
-                           <span className={`text-xs font-mono font-bold ${answerTimeLeft <= 30 ? 'text-red-400' : 'text-blue-400'}`}>
-                              {formatTime(answerTimeLeft)}
-                           </span>
-                        </div>
-                     </div>
-                  )}
-                  
-                  <div className="flex-1 mt-6">
-                     {isAnswering ? (
-                        <p className="text-base text-white/90 leading-relaxed">{transcript || "Listening..."}</p>
-                     ) : (
-                        <p className="text-slate-500 text-sm">Click "Start Answering" to begin recording your response</p>
-                     )}
-                  </div>
-               </div>
+              {loadingQuestions ? (
+                <div className="flex items-center justify-center flex-1 mt-6">
+                  <div className="text-slate-400 animate-pulse text-sm">Generating questions...</div>
+                </div>
+              ) : (
+                <div className="flex-1 mt-6">
+                  <h2 className="text-xl md:text-lg font-semibold text-white leading-relaxed">
+                    {currentQuestion}
+                  </h2>
+                  {questionError && <p className="text-red-400 text-sm mt-3">{questionError}</p>}
+                </div>
+              )}
             </div>
-         </div>
+          </div>
 
-         {/* Bottom Section: Control Buttons */}
-         <div className="flex items-center justify-center gap-3 mt-6">
-            
-            {/* Repeat Button */}
+          {/* RIGHT COLUMN */}
+          <div className="flex flex-col gap-6">
+            {/* User Webcam Card */}
+            <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl h-[350px]">
+              <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-white/10 text-xs font-semibold text-white flex items-center gap-2">
+                <Video className="w-4 h-4 text-green-400" />
+                You
+              </div>
+
+              {camAllowed === true ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover transform scale-x-[-1]"
+                />
+              ) : (
+                <div className="text-slate-500 text-sm flex flex-col items-center gap-2">
+                  <AlertCircle className="w-6 h-6" />
+                  {camError || 'Camera Access Required'}
+                </div>
+              )}
+            </div>
+
+            {/* Your Answer / Transcript Card */}
+            <div className="relative bg-slate-900/50 border border-white/10 rounded-3xl p-8 shadow-2xl min-h-[200px] flex flex-col">
+              <div className="absolute top-4 left-4 flex items-center gap-2">
+                {isAnswering && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+                <span className="text-md font-semibold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">Your Answer</span>
+              </div>
+              {isAnswering && answerTimerStarted && (
+                <div className="absolute top-4 right-4">
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${answerTimeLeft <= 30 ? 'bg-red-500/10 border border-red-500/20' : 'bg-blue-500/10 border border-blue-500/20'}`}>
+                    <Clock className="w-3 h-3" />
+                    <span className={`text-xs font-mono font-bold ${answerTimeLeft <= 30 ? 'text-red-400' : 'text-blue-400'}`}>
+                      {formatTime(answerTimeLeft)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 mt-6">
+                {isAnswering ? (
+                  <p className="text-base text-white/90 leading-relaxed">{transcript || "Listening..."}</p>
+                ) : (
+                  <p className="text-slate-500 text-sm">Click "Start Answering" to begin recording your response</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section: Control Buttons */}
+        <div className="flex items-center justify-center gap-3 mt-6">
+
+          {/* Repeat Button */}
+          <button
+            onClick={() => speakQuestion(currentQuestion)}
+            disabled={isSessionEnded}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800/50 border border-white/10 text-white hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Repeat Question"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="font-medium">Repeat Question</span>
+          </button>
+
+          {/* Record / Stop Button (Primary) */}
+          {!isAnswering ? (
             <button
-               onClick={() => speakQuestion(currentQuestion)}
-               disabled={isSessionEnded}
-               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800/50 border border-white/10 text-white hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-               title="Repeat Question"
+              onClick={startSTT}
+              disabled={isSessionEnded || loadingQuestions}
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-               </svg>
-               <span className="font-medium">Repeat Question</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
+              </svg>
+              <span>Start Answering</span>
             </button>
-
-            {/* Record / Stop Button (Primary) */}
-            {!isAnswering ? (
-               <button
-                  onClick={startSTT}
-                  disabled={isSessionEnded || loadingQuestions}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-               >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                     <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                     <circle cx="12" cy="12" r="3" fill="currentColor" />
-                  </svg>
-                  <span>Start Answering</span>
-               </button>
-            ) : (
-               <button
-                  onClick={stopSTT}
-                  disabled={isSessionEnded || loadingQuestions}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                  <Square className="w-5 h-5 fill-current" />
-                  <span>Stop Answering</span>
-               </button>
-            )}
-
-            {/* Next Question */}
+          ) : (
             <button
-               onClick={handleNextQuestion}
-               disabled={isSessionEnded || loadingQuestions || (currentQuestionIdx >= questions.length - 1 && timeLeft > 0 && !loadingQuestions)}
-               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800/50 border border-white/10 text-white hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-               title="Next Question"
+              onClick={stopSTT}
+              disabled={isSessionEnded || loadingQuestions}
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-               <span className="font-medium">Next Question</span>
-               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-               </svg>
+              <Square className="w-5 h-5 fill-current" />
+              <span>Stop Answering</span>
             </button>
+          )}
 
-            {/* Generate More Questions (Contextual) */}
-            {currentQuestionIdx >= questions.length - 1 && timeLeft > 0 && !loadingQuestions && !isSessionEnded && (
-               <button
-                  onClick={handleGenerateMoreQuestions}
-                  className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all"
-               >
-                  Generate More
-               </button>
-            )}
+          {/* Next Question */}
+          <button
+            onClick={handleNextQuestion}
+            disabled={isSessionEnded || loadingQuestions || (currentQuestionIdx >= questions.length - 1 && timeLeft > 0 && !loadingQuestions)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-800/50 border border-white/10 text-white hover:bg-slate-700/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Next Question"
+          >
+            <span className="font-medium">Next Question</span>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
 
-         </div>
+          {/* Generate More Questions (Contextual) */}
+          {currentQuestionIdx >= questions.length - 1 && timeLeft > 0 && !loadingQuestions && !isSessionEnded && (
+            <button
+              onClick={handleGenerateMoreQuestions}
+              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all"
+            >
+              Generate More
+            </button>
+          )}
+
+        </div>
       </main>
 
       <style>{`
@@ -1153,7 +1158,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
         }
       `}</style>
 
-      
+
       {/* Feedback Modal */}
       {showRatingModal && (
         <Feedback onClose={() => {
