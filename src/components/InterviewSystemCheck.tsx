@@ -7,6 +7,7 @@ export default function InterviewSystemCheck() {
   const { logout } = useAuth();
   const [micAllowed, setMicAllowed] = useState<null | boolean>(null);
   const [camAllowed, setCamAllowed] = useState<null | boolean>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [micError, setMicError] = useState('');
   const [camError, setCamError] = useState('');
   const [isChrome, setIsChrome] = useState<null | boolean>(null);
@@ -24,7 +25,7 @@ export default function InterviewSystemCheck() {
     const userAgent = navigator.userAgent;
     // Check if it's a modern browser (Chrome, Edge, Firefox, Brave, Opera, etc.)
     const isModernBrowser = !!/Chrome|Firefox|Safari|Edge|Edg|OPR/.test(userAgent);
-    
+
     if (isModernBrowser) {
       setIsChrome(true);
     } else {
@@ -36,13 +37,13 @@ export default function InterviewSystemCheck() {
   useEffect(() => {
     // Check browser first
     checkBrowser();
-    
+
     // Store Gemini API key from environment
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (apiKey) {
       sessionStorage.setItem('geminiApiKey', apiKey);
     }
-    
+
     // Parallel device checks for faster loading
     const checkDevices = async () => {
       try {
@@ -62,26 +63,13 @@ export default function InterviewSystemCheck() {
         }
 
         // Handle video result
-        let videoStreamToCleanup: MediaStream | null = null;
         if (videoStream.status === 'fulfilled') {
           setCamAllowed(true);
-          videoStreamToCleanup = videoStream.value;
-          if (videoRef.current) {
-            videoRef.current.srcObject = videoStream.value;
-            // Ensure video plays
-            videoRef.current.play().catch(err => console.log('Video play error:', err));
-          }
+          setVideoStream(videoStream.value);
         } else {
           setCamAllowed(false);
           setCamError('Webcam access denied or not found.');
         }
-        
-        // Cleanup video stream
-        return () => {
-          if (videoStreamToCleanup) {
-            videoStreamToCleanup.getTracks().forEach(track => track.stop());
-          }
-        };
       } catch (error) {
         console.error('Device check error:', error);
       }
@@ -89,6 +77,21 @@ export default function InterviewSystemCheck() {
 
     checkDevices();
   }, []);
+
+  useEffect(() => {
+    if (videoRef.current && videoStream) {
+      videoRef.current.srcObject = videoStream;
+      videoRef.current.play().catch(err => console.log('Video play error:', err));
+    }
+  }, [videoStream, camAllowed]);
+
+  useEffect(() => {
+    return () => {
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [videoStream]);
 
   useEffect(() => {
     let audioStream: MediaStream | null = null;
@@ -162,8 +165,8 @@ export default function InterviewSystemCheck() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-slate-900/10 to-transparent"></div>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.05)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
       <div className="absolute top-20 right-10 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-      
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+
       {/* Authenticated Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl shadow-lg shadow-violet-500/5 border-b border-slate-800/50">
         <div className="max-w-7xl mx-auto px-4">
@@ -187,23 +190,23 @@ export default function InterviewSystemCheck() {
                 </span>
               </span>
             </div>
-            
+
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => navigate('/home')}
                 className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
               >
                 <span className="relative z-10">Home</span>
                 <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/dashboard')}
                 className="px-5 py-2.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors relative group"
               >
                 <span className="relative z-10">Dashboard</span>
                 <span className="absolute inset-0 bg-slate-800/50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </button>
-              <button 
+              <button
                 onClick={async () => {
                   await logout();
                   navigate('/');
@@ -216,7 +219,7 @@ export default function InterviewSystemCheck() {
           </div>
         </div>
       </header>
-      
+
       <main className="flex-1 flex items-center justify-center px-4 py-4 pt-24 relative z-10 w-full">
         <div className="w-full max-w-5xl mx-auto">
           {/* Progress Steps */}
@@ -247,7 +250,7 @@ export default function InterviewSystemCheck() {
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             <div className="p-5">
               <h1 className="text-xl font-bold text-center text-white mb-4">System Check</h1>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 {/* Left Column: Microphone and Browser */}
                 <div className="flex flex-col gap-3">
@@ -389,7 +392,7 @@ export default function InterviewSystemCheck() {
           </div>
         </div>
       </main>
-      
+
       <style>{`
         /* Hide scrollbar but keep functionality */
         * {
@@ -402,4 +405,4 @@ export default function InterviewSystemCheck() {
       `}</style>
     </div>
   );
-} 
+}
