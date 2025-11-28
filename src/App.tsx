@@ -119,14 +119,14 @@ export function App() {
   return (
     <ErrorBoundary>
       <Router>
-        {/* Mobile Blocker Overlay */}
+        {/* Mobile Blocker Overlay
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900 text-white text-center px-6 md:hidden">
           <div className="max-w-sm mx-auto">
             <h2 className="text-2xl font-bold mb-4">Laptop/Desktop Required</h2>
             <p className="text-lg mb-2">This interview platform is designed for use on a laptop or desktop computer.</p>
             <p className="text-gray-400">Please access this site from a larger screen for the best experience.</p>
           </div>
-        </div>
+        </div> */}
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/" element={<PublicOnlyRoute><LandingPage /></PublicOnlyRoute>} />
