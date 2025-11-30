@@ -1,6 +1,6 @@
 <div>
   <h1>🎯 PrepMate - AI-Powered Mock Interview Platform</h1>  
-  <p>Master your interview skills with AI-driven practice sessions, real-time feedback, and personalized training</p>
+  <p>Master your interview skills with AI-driven practice sessions, instant feedback, and personalized training</p>
 
   [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge)](http://prepmate-drab.vercel.app/)
   [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
@@ -20,7 +20,7 @@ PrepMate is a next-generation interview preparation platform that leverages adva
 
 - 🤖 **AI-Powered Mock Interviews** - Practice with adaptive AI that asks and evaluates real interview questions
 - 📚 **Multiple Interview Types** - Behavioral, technical, case study, and industry-specific scenarios
-- ⚡ **Real-Time Feedback** - Get instant, actionable feedback on your answers and communication style
+- ⚡ **Feedback** - Get instant, actionable feedback on your answers and communication style
 - 🎯 **Personalized Training** - Tailored sessions based on your industry, role, and experience level
 - 📊 **Session Analytics** - Comprehensive performance tracking and progress visualization
 - 🎨 **Modern UI/UX** - Clean, responsive design optimized for laptop and desktop
@@ -120,13 +120,9 @@ Before you begin, ensure you have the following installed:
    VITE_GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
-   > ⚠️ **Important:** Never commit your `.env` file to version control!
-
 5. **Start the development server**
    ```bash
-   npm run dev
-   # or
-   yarn dev
+   npm run dev:full
    ```
 
 6. **Open your browser**
@@ -285,7 +281,7 @@ PrepMate/
 
 4. **Start Practicing**
    - Answer questions naturally
-   - Receive real-time AI feedback
+   - Receive instant AI feedback
    - Review your performance analytics
 
 5. **Track Progress**

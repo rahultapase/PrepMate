@@ -54,7 +54,7 @@ export const HeroSection= () =>{
                 <div className="absolute inset-0 bg-violet-400 blur-sm opacity-50 animate-pulse"></div>
               </div>
               <span className="text-sm font-semibold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
-                NextGen AI Interview Technology
+                AI-Powered Interview Platform
               </span>
               <Zap className="h-3 w-3 text-violet-400" />
             </div>
@@ -76,8 +76,8 @@ export const HeroSection= () =>{
               
               <p className="text-xl text-slate-400 leading-relaxed max-w-xl">
                 Build confidence and outperform competitors with{' '}
-                <span className="text-white font-semibold">personalized AI interview coaching</span>{' '}
-                tailored to your skills and target role, complete with real-time feedback.
+                <span className="text-white font-semibold">personalized AI interview practice</span>{' '}
+                tailored to your skills and target role, complete with instant feedback.
               </p>
             </div>
 

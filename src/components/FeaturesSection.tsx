@@ -72,7 +72,7 @@ export const FeaturesSection = () => {
       delay: '400ms'
     },
     {
-      name: 'AI-Driven Real-time Feedback',
+      name: 'AI-Driven Instant Feedback',
       description: 'Receive instant feedback on your responses, body language, tone, and communication style during interviews.',
       icon: (
         <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ export const FeaturesSection = () => {
           </h2>
           
           <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-400 leading-relaxed">
-            PrepMate combines multiple artificial intelligence systems to
+            PrepMate combines artificial intelligence systems to
             deliver the most comprehensive interview preparation experience
             available today.
           </p>
