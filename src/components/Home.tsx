@@ -226,7 +226,7 @@ const Home = () =>{
               <button 
                 onClick={async () => {
                   await logout();
-                  window.location.href = "http://localhost:5173";
+                  window.location.href = "/";
                 }}
                 className="group relative px-6 py-2.5 rounded-xl font-semibold text-white text-sm bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-105 overflow-hidden"
               >
@@ -322,7 +322,7 @@ const Home = () =>{
                     onClick={async () => {
                       setMobileMenuOpen(false);
                       await logout();
-                      window.location.href = "http://localhost:5173";
+                      window.location.href = "/";
                     }}
                     className="w-full px-6 py-3 rounded-xl font-semibold text-white text-base bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-300"
                   >
