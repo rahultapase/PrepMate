@@ -17,19 +17,19 @@ const PORT = process.env.PORT || 3001;
 const securityHeaders = (req, res, next) => {
   // XSS Protection
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  
+
   // Prevent clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
-  
+
   // Prevent MIME type sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  
+
   // Strict Transport Security (HTTPS only)
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  
+
   // Cross-Origin-Opener-Policy for Firebase Auth popup
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  
+
   // Content Security Policy
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
@@ -44,10 +44,10 @@ const securityHeaders = (req, res, next) => {
     "form-action 'self'",
     "frame-ancestors 'none'"
   ].join('; '));
-  
+
   // Referrer Policy
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
+
   // Permissions Policy
   res.setHeader('Permissions-Policy', [
     'camera=self',
@@ -56,10 +56,10 @@ const securityHeaders = (req, res, next) => {
     'payment=self',
     'usb=self'
   ].join(', '));
-  
+
   // Remove server information
   res.removeHeader('X-Powered-By');
-  
+
   next();
 };
 
@@ -78,8 +78,8 @@ app.use(securityHeaders);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
+  res.status(200).json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
@@ -96,20 +96,20 @@ app.use('/api/', limiter);
 
 // Gemini API proxy endpoint
 app.post('/api/gemini', async (req, res) => {
-  console.log('Received API request:', { 
-    hasPrompt: !!req.body.prompt, 
+  console.log('Received API request:', {
+    hasPrompt: !!req.body.prompt,
     hasApiKey: !!req.body.userApiKey,
-    origin: req.headers.origin 
+    origin: req.headers.origin
   });
-  
+
   try {
-    const { prompt, model = 'gemini-2.5-pro', userApiKey } = req.body;
-    
+    const { prompt, model = 'gemini-2.5-flash', userApiKey } = req.body;
+
     // Validate input
     if (!prompt || typeof prompt !== 'string') {
       return res.status(400).json({ error: 'Prompt is required and must be a string' });
     }
-    
+
     if (prompt.length > 10000) {
       return res.status(400).json({ error: 'Prompt too long (max 10,000 characters)' });
     }
@@ -119,20 +119,20 @@ app.post('/api/gemini', async (req, res) => {
       console.error('No user API key provided');
       return res.status(400).json({ error: 'User API key is required. Please provide your Gemini API key in the frontend.' });
     }
-    
+
     const apiKey = userApiKey;
 
     // Call Gemini API with retry logic
     console.log('Making request to Gemini API...'); // Removed API key logging
-    
+
     let response;
     let retries = 3;
     let lastError;
-    
+
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         response = await fetch(
-          `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: {
@@ -150,24 +150,24 @@ app.post('/api/gemini', async (req, res) => {
         );
 
         console.log(`Response status: ${response.status}`);
-        
+
         if (response.ok) {
           break; // Success, exit retry loop
         }
-        
+
         const errorData = await response.json();
         lastError = errorData;
-        
-        // If it's a 503 (overloaded) and we have retries left, wait and try again
-        if (response.status === 503 && attempt < retries) {
-          console.log(`Attempt ${attempt} failed with 503, retrying in ${attempt * 2} seconds...`);
+
+        // If it's a 503 (overloaded) or 429 (rate limit) and we have retries left
+        if ((response.status === 503 || response.status === 429) && attempt < retries) {
+          console.log(`Attempt ${attempt} failed with ${response.status}, retrying in ${attempt * 2} seconds...`);
           await new Promise(resolve => setTimeout(resolve, attempt * 2000));
           continue;
         }
-        
+
         // For other errors or no retries left, break
         break;
-        
+
       } catch (error) {
         console.error(`Attempt ${attempt} failed with network error:`, error);
         lastError = { error: { message: error.message } };
@@ -178,11 +178,11 @@ app.post('/api/gemini', async (req, res) => {
         break;
       }
     }
-    
+
     if (!response || !response.ok) {
       console.error('Gemini API error after retries:', lastError);
-      return res.status(response?.status || 500).json({ 
-        error: lastError?.error?.message || 'Failed to generate content after multiple attempts' 
+      return res.status(response?.status || 500).json({
+        error: lastError?.error?.message || 'Failed to generate content after multiple attempts'
       });
     }
 
