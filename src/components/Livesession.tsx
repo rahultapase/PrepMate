@@ -471,7 +471,7 @@ Important Instructions:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: prompt,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-pro',
         userApiKey: userApiKey
       })
     });
@@ -657,7 +657,7 @@ Important Instructions:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: prompt,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-pro',
         userApiKey: userApiKey
       })
     });
@@ -843,7 +843,7 @@ IMPORTANT: Return ONLY the JSON object above. Do NOT add any extra text, explana
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: prompt,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-pro',
         userApiKey: userApiKey
       })
     });

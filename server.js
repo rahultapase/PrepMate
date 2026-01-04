@@ -103,7 +103,7 @@ app.post('/api/gemini', async (req, res) => {
   });
   
   try {
-    const { prompt, model = 'gemini-1.5-flash', userApiKey } = req.body;
+    const { prompt, model = 'gemini-2.5-pro', userApiKey } = req.body;
     
     // Validate input
     if (!prompt || typeof prompt !== 'string') {
@@ -132,7 +132,7 @@ app.post('/api/gemini', async (req, res) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: {
